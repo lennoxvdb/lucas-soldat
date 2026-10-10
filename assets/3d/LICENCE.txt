@@ -1,0 +1,4 @@
+trooper.glb = "Knight" du KayKit Adventurers Character Pack 1.0
+par Kay Lousberg (www.kaylousberg.com) — licence CC0 (domaine public).
+https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0
+Repeint en camouflage, casque et pistolet à prout ajoutés dans le code (js/hero3d.js).
