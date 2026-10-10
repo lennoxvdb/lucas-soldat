@@ -59,6 +59,16 @@ Les dessins 2D de Lucas restent en secours si le modèle ne charge pas.
 - `src/ui/ui.js` + `css/style.css` écrans et HUD.
 - `assets/` dessins (Pokepetro + planches Gemini découpées par `tools/cut_planches.py`), `lib/` Three.js en local.
 
-## Prochaines étapes
-1. Planches Gemini (Lucas qui marche/tire, décor) → remplacer les dessins provisoires.
-2. APK Android avec Capacitor (gratuit) : copier `index.html`, `css`, `js`, `lib`, `assets` dans `www/`.
+## Publication (GitHub, Android, mises à jour)
+- Dépôt public : https://github.com/lennoxvdb/lucas-soldat (branche `main`). Jeu en ligne : https://lennoxvdb.github.io/lucas-soldat/
+- `.github/workflows/publier.yml` : à chaque envoi, met `www/` sur GitHub Pages avec `version.json` (1.0.<numéro>) et `update.zip`.
+  Le travail Android de GitHub ne tourne qu'avec « Run workflow » et demande les secrets KEYSTORE_BASE64 / KEYSTORE_PASSWORD (pas encore rangés : refusé par sécurité, l'utilisateur peut le faire).
+- Appli : Capacitor 8 (`android/`, appId `com.lennoxvdb.lucassoldat`), `node tools/build_www.mjs` prépare `www/`, `tools/build_apk.ps1` fabrique l'APK signé → `publication/lucas-soldat.apk` (pas dans git) puis on le met dans une Release GitHub.
+- Clé de signature HORS du projet : `%USERPROFILE%\lucas-soldat-signature` (jks + mot de passe, ne jamais afficher). JDK : `%USERPROFILE%\.jdks\jdk-21…`, SDK : `%LOCALAPPDATA%\Android\Sdk`.
+- Mises à jour automatiques : `src/engine/update.js` (extension libre `@capgo/capacitor-updater`) compare `version.json` local et celui de GitHub Pages, télécharge `update.zip` et l'installe au lancement suivant.
+- Ne jamais installer sur le téléphone branché (règle) : l'utilisateur télécharge l'APK depuis le lien de la Release.
+
+## Équilibrage
+`tools/bot_hero.js` : robot qui joue une mission héros (à importer dans la console, `botHero(mission, {skill})`).
+Réglages actuels : montée douce par mission (vitesse d'apparition +12 %/mission, PV +15 %, dégâts +8 %), gardiens 450×(1+0,35×mission),
+et Lucas reçoit une amélioration par mission déjà gagnée au début de chaque mission héros (`startBonus`).
