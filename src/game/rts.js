@@ -196,7 +196,7 @@ export class Rts {
     this.awake = false;
     this.calmT = mi <= 1 ? 60 : 35; // au début, les nids dorment : on a le temps de construire
     this.hintT = 0; this.hint = 0; this.gateTip = false; this.trainedN = 0;
-    if (this.tuto) { this.tuto.active = false; this.g.ui.tuto(null); this.g.ui.tutoTarget(null); }
+    if (this.tuto) { this.tuto.finish && this.tuto.active && (this.tuto.active = false); if (this.tuto.arrow) { this.scene.remove(this.tuto.arrow, this.tuto.ring); } this.g.ui.tuto(null); this.g.ui.tutoTarget(null); }
     this.tuto = null;
     this.tab = 'build';
     this.uiDirty = true;
@@ -395,6 +395,8 @@ export class Rts {
     for (let dz = 0; dz < s; dz++) for (let dx = 0; dx < s; dx++) out.push([ix + dx, iz + dz]);
     return out;
   }
+
+  cellX(i, type) { return ctr(i) + (BUILDINGS[type].size - 1) * CS / 2; }
 
   canPlace(type, ix, iz) {
     const B = BUILDINGS[type];

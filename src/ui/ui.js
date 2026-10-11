@@ -101,6 +101,7 @@ export class UI {
       </div>
       <button class="btn small ghost diffbtn" data-act="diff">${(DIFFS[save.diff] || DIFFS.facile).icon} Difficulté : <b>${(DIFFS[save.diff] || DIFFS.facile).name}</b></button>
       <div class="know" data-act="story">« Voulez-vous en savoir plus ? »</div>
+      ${window.GAME_VERSION ? `<div class="version">version ${window.GAME_VERSION}</div>` : ''}
     `, 'transparentbg menubg');
   }
 

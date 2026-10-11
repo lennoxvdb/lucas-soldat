@@ -9,7 +9,7 @@ const newer = (a, b) => {
   return false;
 };
 
-export async function autoUpdate(onReady) {
+export async function autoUpdate(onReady, canApplyNow) {
   const C = window.Capacitor;
   if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
   const U = C.Plugins && C.Plugins.CapacitorUpdater;
@@ -21,8 +21,10 @@ export async function autoUpdate(onReady) {
     const latest = await fetch(SITE + 'version.json?' + Date.now(), { cache: 'no-store' }).then((r) => r.json());
     if (!newer(latest.version, mine.version)) return;
     const bundle = await U.download({ url: SITE + 'update.zip', version: latest.version });
+    // sur l'écran titre : on installe tout de suite (l'appli redémarre) ; en pleine partie : au prochain lancement
+    if (canApplyNow && canApplyNow()) { if (onReady) onReady(latest.version, true); await U.set({ id: bundle.id }); return; }
     await U.next({ id: bundle.id });
-    if (onReady) onReady(latest.version);
+    if (onReady) onReady(latest.version, false);
   } catch (e) {
     console.warn('mise à jour impossible pour le moment', e);
   }

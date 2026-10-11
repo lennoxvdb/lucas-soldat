@@ -387,7 +387,9 @@ async function boot() {
   resize();
   ui.title(save);
   $('loading').classList.add('hidden');
-  autoUpdate((v) => ui.radio(`Nouvelle version ${v} téléchargée ! Elle sera là au prochain lancement du jeu.`, 'sg4'));
+  autoUpdate((v, now) => ui.radio(now ? `Mise à jour ${v} : le jeu redémarre…` : `Nouvelle version ${v} téléchargée ! Elle sera là au prochain lancement du jeu.`, 'sg4'),
+    () => game.state === 'menu');
+  fetch('version.json', { cache: 'no-store' }).then((r) => r.json()).then((v) => { window.GAME_VERSION = v.version; if (game.state === 'menu' && document.querySelector('.menubg')) ui.title(save); }).catch(() => {});
   let last = performance.now();
   const frame = (now) => {
     const dt = Math.min(0.05, (now - last) / 1000);
