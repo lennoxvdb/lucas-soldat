@@ -154,10 +154,10 @@ export class UI {
 
   briefingBase(mission, M) {
     const ctrl = this.isMobile
-      ? gest([[1, 'Touche un soldat, puis un endroit : il y va'], [5, 'Trace un cadre : plusieurs soldats'], [6, 'Touche 2 fois : toute l’armée'],
-        [4, 'Deux doigts : bouger la carte'], [3, 'Pince : zoomer'], [7, 'Glisse pour tracer un mur, puis ✔'], [8, 'Pouvoirs de la Flotte : bouton puis carte']])
-      : gest([[1, 'Clic sur un soldat, clic droit : il y va'], [5, 'Trace un cadre : plusieurs soldats'], [6, 'Double clic : toute l’armée'],
-        [4, 'Clic droit glissé ou bords : bouger la carte'], [3, 'Molette : zoomer'], [7, 'Glisse pour tracer un mur, puis ✔'], [8, 'Pouvoirs de la Flotte : bouton puis carte']]);
+      ? gest([[2, 'Glisse un doigt : bouger la carte'], [1, 'Touche un soldat, puis un endroit : il y va'], [5, 'Appui long puis glisse : plusieurs soldats'],
+        [6, 'Touche 2 fois : toute l’armée'], [3, 'Pince : zoomer'], [7, 'Mur : glisse pour le tracer, puis ✔'], [8, 'Pouvoirs de la Flotte : bouton puis carte']])
+      : gest([[2, 'Glisse (ou flèches, ou bords) : bouger la carte'], [1, 'Clic sur un soldat, clic droit : il y va'], [5, 'Maj + glisser : plusieurs soldats'],
+        [6, 'Double clic : toute l’armée'], [3, 'Molette : zoomer'], [7, 'Mur : glisse pour le tracer, puis ✔'], [8, 'Pouvoirs de la Flotte : bouton puis carte']]);
     this.show(`
       <div class="h1 outline">MISSION ${mission + 1} / ${MISSIONS.length}</div>
       <img class="mis-img" src="assets/missions/mis_${mission + 1}.webp" alt="">

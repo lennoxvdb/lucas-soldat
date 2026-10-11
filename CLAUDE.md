@@ -37,7 +37,7 @@ Bâtiments, chars, récolteurs, nids et tas de haricots = dessins Gemini (`asset
 Mode base « à la Command & Conquer » (`js/rts.js`) : le vaisseau écrasé de Lucas = QG (ce n'est PAS une fusée : demande de l'utilisateur) (canon à gaz, plus solide à chaque pièce),
 récolteur + champs de haricots, bâtiments (murs, tourelles, champ, caserne ; puis lance-bombes, ventilateur,
 pompe à gaz sur geyser, garage), unités (soldats, chiens, chars, récolteurs), nids qui envoient des vagues.
-Commandes : glisser = vue, pincer/molette = zoom, toucher une unité puis un endroit/nid = ordre.
+Commandes (comme les jeux de stratégie sur téléphone) : glisser = bouger la carte (avec élan), toucher une unité puis un endroit/nid = ordre, appui long puis glisser (PC : Maj + glisser) = cadre de sélection, pincer/molette = zoom, PC : clic droit = ordre, flèches/bords = carte.
 
 ## Planches Gemini
 `planches/` (originaux) → `tools/cut_planches.py` → `assets/lucas`, `assets/lucas_dos`, `assets/boss`,

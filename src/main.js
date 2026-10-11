@@ -109,9 +109,13 @@ function local(e) {
   const s = r.width / gameEl.offsetWidth || 1;
   return { x: (e.clientX - r.left) / s, y: (e.clientY - r.top) / s };
 }
-// ---- mode base : glisser = déplacer la vue, pincer = zoomer, toucher = ordre ----
+// ---- mode base (comme les jeux de stratégie sur téléphone) ----
+// glisser = déplacer la carte (avec de l'élan), toucher = choisir / donner un ordre,
+// appui long puis glisser (ou Maj + glisser) = cadre pour choisir plusieurs soldats, pincer / molette = zoom
 const touches = new Map();
 let pan = null, pinch = null;
+const camVel = { x: 0, y: 0 }; // élan de la carte (pixels par seconde)
+const LONG_PRESS = 380;
 const GROUND_UP = { x: -Math.SQRT1_2, z: -Math.SQRT1_2 }, GROUND_RIGHT = { x: Math.SQRT1_2, z: -Math.SQRT1_2 };
 function clampCam() {
   const c = game.camTarget, d = Math.hypot(c.x, c.z);
@@ -140,6 +144,7 @@ gameEl.addEventListener('pointerdown', (e) => {
   if (!rtsOn() || e.target.closest('button, .card, .screen, #rtsPanel, #minimap, #powers')) return;
   const p = local(e);
   touches.set(e.pointerId, p);
+  camVel.x = camVel.y = 0;
   try { gameEl.setPointerCapture(e.pointerId); } catch (err) { /* rien */ }
   if (e.pointerType === 'mouse' && e.button !== 0) {
     // souris : clic droit = ordre (glisser = déplacer la vue), clic molette = déplacer la vue
@@ -147,12 +152,23 @@ gameEl.addEventListener('pointerdown', (e) => {
     return;
   }
   if (touches.size === 1) {
-    pan = { x: p.x, y: p.y, sx: p.x, sy: p.y, moved: false, shift: e.shiftKey, mode: 'box' };
+    pan = { x: p.x, y: p.y, sx: p.x, sy: p.y, moved: false, mode: e.shiftKey ? 'box' : 'drag', vx: 0, vy: 0, t: performance.now() };
     if (game.rts.power) pan.mode = 'power';
     else if (game.rts.place) { pan.mode = 'paint'; game.rts.placeDown(p.x, p.y, GW(), GH()); }
+    else if (pan.mode === 'drag') {
+      // appui long sans bouger : on passe en cadre de sélection
+      const P = pan;
+      P.lp = setTimeout(() => {
+        if (pan !== P || P.moved || touches.size !== 1) return;
+        P.mode = 'box';
+        try { navigator.vibrate && navigator.vibrate(18); } catch (err) { /* rien */ }
+        showBox({ x: P.sx - 3, y: P.sy - 3 }, { x: P.sx + 3, y: P.sy + 3 });
+      }, LONG_PRESS);
+    }
   }
   if (touches.size === 2) {
     // deux doigts : on déplace la vue et on zoome
+    if (pan && pan.lp) clearTimeout(pan.lp);
     if (game.rts.place) game.rts.place.down = false;
     selBox.classList.add('hidden');
     const [a, b] = [...touches.values()];
@@ -177,9 +193,17 @@ gameEl.addEventListener('pointermove', (e) => {
   if (!pan) return;
   if (pan.mode === 'paint') { game.rts.placeMove(p.x, p.y, GW(), GH()); return; }
   if (pan.mode === 'power') { game.rts.hover(p.x, p.y, GW(), GH()); return; }
-  if (!pan.moved && Math.hypot(p.x - pan.sx, p.y - pan.sy) > 9) pan.moved = true;
+  if (!pan.moved && Math.hypot(p.x - pan.sx, p.y - pan.sy) > 9) { pan.moved = true; clearTimeout(pan.lp); }
   if (!pan.moved) return;
-  if (pan.mode === 'right' || pan.mode === 'pan') { panBy(p.x - pan.x, p.y - pan.y); pan.x = p.x; pan.y = p.y; return; }
+  if (pan.mode === 'right' || pan.mode === 'pan' || pan.mode === 'drag') {
+    const now = performance.now(), dts = Math.max(0.001, (now - pan.t) / 1000);
+    const dx = p.x - pan.x, dy = p.y - pan.y;
+    panBy(dx, dy);
+    // vitesse du doigt (lissée) pour l'élan quand on lâche
+    pan.vx = pan.vx * 0.6 + (dx / dts) * 0.4; pan.vy = pan.vy * 0.6 + (dy / dts) * 0.4;
+    pan.x = p.x; pan.y = p.y; pan.t = now;
+    return;
+  }
   if (pan.mode === 'box') showBox({ x: pan.sx, y: pan.sy }, p);
 });
 const rtsUp = (e) => {
@@ -187,11 +211,17 @@ const rtsUp = (e) => {
   const p = touches.get(e.pointerId);
   touches.delete(e.pointerId);
   selBox.classList.add('hidden');
+  if (pan) clearTimeout(pan.lp);
   if (pan && rtsOn() && touches.size === 0) {
     if (pan.mode === 'paint') { if (game.rts.place) game.rts.placeUp(); }
     else if (pan.mode === 'box' && pan.moved) game.rts.boxSelect(pan.sx, pan.sy, p.x, p.y, GW(), GH());
     else if (pan.mode === 'right' && !pan.moved) game.rts.order(pan.sx, pan.sy, GW(), GH());
-    else if (!pan.moved && (pan.mode === 'box' || pan.mode === 'power')) game.rts.onTap(pan.sx, pan.sy, GW(), GH());
+    else if (pan.mode === 'drag' && pan.moved && performance.now() - pan.t < 90) {
+      // on a « lancé » la carte : elle continue un peu toute seule
+      const v = Math.hypot(pan.vx, pan.vy), max = 2000, k = (v > max ? max / v : 1) * 0.8;
+      if (v > 120) { camVel.x = pan.vx * k; camVel.y = pan.vy * k; }
+    }
+    else if (!pan.moved && (pan.mode === 'box' || pan.mode === 'power' || pan.mode === 'drag')) game.rts.onTap(pan.sx, pan.sy, GW(), GH());
   }
   if (touches.size < 2) pinch = null;
   if (touches.size === 0) pan = null;
@@ -203,6 +233,14 @@ gameEl.addEventListener('wheel', (e) => {
   e.preventDefault();
   game.setZoom(game.zoom * (1 + Math.sign(e.deltaY) * 0.1));
 }, { passive: false });
+// l'élan de la carte après un glissé rapide
+function glide(dt) {
+  if (!rtsOn()) { camVel.x = camVel.y = 0; return; }
+  if (Math.abs(camVel.x) + Math.abs(camVel.y) < 8) return;
+  panBy(camVel.x * dt, camVel.y * dt);
+  const k = Math.exp(-6 * dt);
+  camVel.x *= k; camVel.y *= k;
+}
 // la souris au bord de l'écran fait défiler la vue (comme dans Command & Conquer)
 function edgeScroll(dt) {
   if (!rtsOn() || !mouseAt || touches.size) return;
@@ -254,7 +292,7 @@ function readInput() {
   if (joy.on) { x += joy.x; y += joy.y; }
   game.input.x = Math.max(-1, Math.min(1, x));
   game.input.y = Math.max(-1, Math.min(1, y));
-  if (rtsOn() && (x || y)) panBy(-x * 14, -y * 14); // flèches / ZQSD : on déplace la vue
+  if (rtsOn() && (x || y)) panBy(-x * 12, -y * 12); // flèches / ZQSD : on déplace la vue
   if (game.state !== 'play' && joy.on) { joy.on = false; $('joy').classList.add('hidden'); }
 }
 
@@ -346,6 +384,7 @@ async function boot() {
     last = now;
     readInput();
     edgeScroll(dt);
+    glide(dt);
     game.update(dt);
     renderer.render(scene, camera);
     requestAnimationFrame(frame);
