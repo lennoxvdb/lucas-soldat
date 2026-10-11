@@ -221,7 +221,8 @@ const rtsUp = (e) => {
       const v = Math.hypot(pan.vx, pan.vy), max = 2000, k = (v > max ? max / v : 1) * 0.8;
       if (v > 120) { camVel.x = pan.vx * k; camVel.y = pan.vy * k; }
     }
-    else if (!pan.moved && (pan.mode === 'box' || pan.mode === 'power' || pan.mode === 'drag')) game.rts.onTap(pan.sx, pan.sy, GW(), GH());
+    else if (pan.mode === 'power') game.rts.onTap(p.x, p.y, GW(), GH());
+    else if (!pan.moved && (pan.mode === 'box' || pan.mode === 'drag')) game.rts.onTap(pan.sx, pan.sy, GW(), GH());
   }
   if (touches.size < 2) pinch = null;
   if (touches.size === 0) pan = null;

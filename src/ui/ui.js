@@ -337,7 +337,12 @@ export class UI {
     const el = $('powers');
     const html = Object.entries(POWERS).map(([id, P]) => {
       const cd = Math.ceil(r.pcd[id] || 0), poor = P.cost && r.money < P.cost;
-      return `<button class="pw ${cd || poor ? 'wait' : ''} ${r.power === id ? 'on' : ''}" data-p="${id}" title="${P.name}">
+      const pct = cd ? Math.round(100 - (r.pcd[id] / P.cd) * 100) : 100;
+      // quand un pouvoir redevient prêt : il brille et le pilote prévient
+      if (this.pwWasWaiting && this.pwWasWaiting[id] && !cd && r.active) { this.pwReady = this.pwReady || {}; this.pwReady[id] = performance.now(); if (id !== 'mega') this.radio(`${P.name} : la Flotte est prête !`, 'pilote'); }
+      (this.pwWasWaiting = this.pwWasWaiting || {})[id] = !!cd;
+      const fresh = this.pwReady && performance.now() - (this.pwReady[id] || 0) < 2500;
+      return `<button class="pw ${cd || poor ? 'wait' : ''} ${r.power === id ? 'on' : ''} ${fresh ? 'ready' : ''}" data-p="${id}" title="${P.name}" style="--p:${pct}%">
         <span class="pi">${P.img ? `<img src="${P.img}" alt="">` : P.icon}</span>${cd ? `<i>${cd}</i>` : (P.cost ? `<b>${P.cost}</b>` : '')}</button>`;
     }).join('');
     if (html !== this.pwHtml) { el.innerHTML = html; this.pwHtml = html; }

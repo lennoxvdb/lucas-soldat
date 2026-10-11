@@ -30,7 +30,7 @@ export const BUILDINGS = {
 // Les pouvoirs de la Flotte (comme dans Starship Troopers) : on touche le bouton, puis l'endroit sur la carte
 export const POWERS = {
   drop: { name: 'Renforts', icon: '🛸', img: 'assets/icones/ico_1.webp', cd: 40, cost: 150, r: 3, hint: 'touche l’endroit où le vaisseau dépose une escouade' },
-  strike: { name: 'Frappe orbitale', icon: '☄️', img: 'assets/icones/ico_2.webp', cd: 45, cost: 0, r: 5.5, hint: 'touche l’endroit à bombarder' },
+  strike: { name: 'Frappe orbitale', icon: '☄️', img: 'assets/icones/ico_2.webp', cd: 35, cost: 0, r: 5.5, hint: 'touche l’endroit à bombarder' },
   heal: { name: 'Soins', icon: '🩹', img: 'assets/icones/ico_3.webp', cd: 30, cost: 0, r: 8, hint: 'touche l’endroit à soigner' },
   mega: { name: 'Méga-Prout de Lucas', icon: '💨', img: 'assets/icones/ico_4.webp', cd: 25, cost: 0, r: 6.5, instant: true, hint: '' },
 };

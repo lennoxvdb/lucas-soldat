@@ -1189,7 +1189,7 @@ export class Game {
     this.bombs = this.bombs.filter((b) => !b.done);
   }
 
-  explode(x, z, r, dmg, big = false) {
+  explode(x, z, r, dmg, big = false, shake = null) {
     if (this.mode === 'base') this.rts.blastNests(x, z, r, dmg);
     this.query(x, z, r + 1.5, (m) => {
       const dx = m.pos.x - x, dz = m.pos.z - z, d = Math.hypot(dx, dz);
@@ -1203,7 +1203,7 @@ export class Game {
     b.s.scale.set(r * 2.8, r * 2.8, 1);
     this.particles.burst(x, 0.6, z, 0x7fd62a, big ? 26 : 12, big ? 9 : 5, { life: 0.9, s0: 0.8, s1: 2.4 });
     this.sfx.boom();
-    this.shake = Math.max(this.shake, big ? 0.55 : 0.2);
+    this.shake = Math.min(0.6, Math.max(this.shake, shake ?? (big ? 0.55 : 0.2)));
     if (big || Math.random() < 0.25) this.word(x, 2, z, big ? 4 : undefined);
   }
 
@@ -1426,7 +1426,7 @@ export class Game {
         this.addFx('fx_5', st.x, 0, st.z, st.r * 2.2, 0.8, { cy: 0.1, fadeAt: 0.4 });
         st.beam.renderOrder = 7;
         this.scene.add(st.beam);
-        this.explode(st.x, st.z, st.r, st.dmg, true);
+        this.explode(st.x, st.z, st.r, st.dmg, true, 0.3);
       }
       if (st.beam) {
         const k = (st.t - 0.9) / 0.45;

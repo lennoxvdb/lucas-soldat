@@ -385,3 +385,8 @@ body.phone #mmframe { top: 88px; right: 16px; width: 100px; height: 100px; }
   text-shadow: 0 6px 0 #3a2412, 0 0 24px rgba(156,255,58,.75), 0 0 6px rgba(156,255,58,.9); transform: rotate(-3deg); }
 .textlogo span { font-family: 'Luckiest Guy', sans-serif; font-size: clamp(14px, 3.6vw, 24px); color: #fff; background: #4f8a1f;
   border: 3px solid #3a2412; border-radius: 10px; padding: 4px 14px 2px; box-shadow: 0 4px 0 #3a2412; transform: rotate(-2deg); }
+
+/* pouvoirs de la Flotte : le cercle se remplit pendant l'attente, le bouton brille quand c'est prêt */
+.pw.wait i { background: conic-gradient(rgba(255,210,63,.55) var(--p), rgba(20,10,30,.7) 0); font-family: 'Luckiest Guy', sans-serif; font-size: 20px; text-shadow: 0 2px 0 #000; }
+.pw.ready { animation: pwReady .5s ease-in-out 5 alternate; }
+@keyframes pwReady { from { transform: scale(1); filter: drop-shadow(0 0 0 #ffd23f); } to { transform: scale(1.18); filter: drop-shadow(0 0 12px #ffd23f); } }
