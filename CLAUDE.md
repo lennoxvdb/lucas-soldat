@@ -37,6 +37,7 @@ Bâtiments, chars, récolteurs, nids et tas de haricots = dessins Gemini (`asset
 Mode base « à la Command & Conquer » (`js/rts.js`) : le vaisseau écrasé de Lucas = QG (ce n'est PAS une fusée : demande de l'utilisateur) (canon à gaz, plus solide à chaque pièce),
 récolteur + champs de haricots, bâtiments (murs, tourelles, champ, caserne ; puis lance-bombes, ventilateur,
 pompe à gaz sur geyser, garage), unités (soldats, chiens, chars, récolteurs), nids qui envoient des vagues.
+Tutoriel guidé de la première base (`src/game/tuto.js`, une seule fois, sauvegarde `ls_tuto_base`, bouton « Passer ») : champ → 2 tourelles → mur (6 sacs) → porte → caserne finie → escouade → défense (les nids dorment jusque-là) → « À l'attaque ! » → fin. Chaque étape : carte du Sergent en haut, bouton qui clignote (`tuto-hl`), récompense en haricots.
 Porte fortifiée (`gate`, 3D : piliers + barrière rayée qui se lève quand un soldat approche) : se pose sur un mur, nos unités passent (`gateCell`, `pushOut(..., friend)`), les monstres non. Mur/porte : toucher puis « 💥 Démolir ». Retoucher le bouton d'un bâtiment annule la construction.
 Commandes (comme les jeux de stratégie sur téléphone) : glisser = bouger la carte (avec élan), toucher une unité puis un endroit/nid = ordre, appui long puis glisser (PC : Maj + glisser) = cadre de sélection, pincer/molette = zoom, PC : clic droit = ordre, flèches/bords = carte.
 

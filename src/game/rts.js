@@ -5,6 +5,7 @@ import { toon, toonMat, InstPool, spriteMats, outlineGeo, outlineMat, canvasTex 
 import { ARENA } from '../world/world.js';
 import { mergeGeometries } from '../../lib/BufferGeometryUtils.js';
 import { Trooper } from '../entities/hero3d.js';
+import { Tuto, tutoDone } from './tuto.js';
 import { dir8, DOG8, REC8 } from '../engine/gfx.js';
 
 const CS = 2, OFF = 60, N = 60;                  // cases de 2 m, de -60 à +60
@@ -194,7 +195,9 @@ export class Rts {
     this.waveT = mi <= 1 ? 150 : 120;
     this.awake = false;
     this.calmT = mi <= 1 ? 60 : 35; // au début, les nids dorment : on a le temps de construire
-    this.hintT = 0; this.hint = 0; this.gateTip = false;
+    this.hintT = 0; this.hint = 0; this.gateTip = false; this.trainedN = 0;
+    if (this.tuto) { this.tuto.active = false; this.g.ui.tuto(null); this.g.ui.tutoTarget(null); }
+    this.tuto = null;
     this.tab = 'build';
     this.uiDirty = true;
     this.nextId = 1;
@@ -280,6 +283,7 @@ export class Rts {
     this.g.camTarget.set(HQ_POS.x + 2, 0, HQ_POS.z + 3);
     this.g.setZoom(1.2);
     this.g.radio(opts.fromShip ? 'Mon équipe a reçu mon SOS ! On construit la base et on exploite le gaz !' : 'Soldat Lucas ! Agrandis la base, pompe le gaz et détruis les nids de monstres !', opts.fromShip ? 'lucas' : 1);
+    if (mi === 1 && !tutoDone()) this.tuto = new Tuto(this);
   }
 
   rand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
@@ -751,7 +755,7 @@ export class Rts {
     for (const k in this.pcd) this.pcd[k] = Math.max(0, this.pcd[k] - dt * (1 + 0.5 * Math.min(3, radios)));
     this.fogT -= dt;
     if (this.fogT <= 0) { this.fogT = 0.2; this.updateFog(); }
-    this.hints(dt);
+    if (this.tuto && this.tuto.active) this.tuto.update(dt); else this.hints(dt);
     this.draw();
   }
 
@@ -1686,6 +1690,7 @@ export class Rts {
     if (this.units.length + (U.squad || 1) > 48) { this.g.radio('L’armée est complète, soldat !', 2); return; }
     this.money -= U.cost;
     from.queue.push(type);
+    if (type === 'soldier') this.trainedN++;
     this.g.sfx.click();
     this.uiDirty = true;
   }

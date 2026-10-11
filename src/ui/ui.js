@@ -274,7 +274,7 @@ export class UI {
     if (this.cache.money !== money) { $('money').textContent = money; this.cache.money = money; }
     const alive = r.nests.filter((n) => n.hp > 0).length;
     const wt = Math.max(0, Math.ceil(r.waveT));
-    const wtxt = `⚠️ Attaque dans ${Math.floor(wt / 60)}:${String(wt % 60).padStart(2, '0')}`;
+    const wtxt = r.waveT > 1e5 ? '😴 Les nids dorment' : `⚠️ Attaque dans ${Math.floor(wt / 60)}:${String(wt % 60).padStart(2, '0')}`;
     if (this.cache.wave !== wtxt) { $('wave').textContent = wtxt; this.cache.wave = wtxt; }
     if (this.cache.nests !== alive) { $('nestsLeft').textContent = '🕳️ ' + alive; this.cache.nests = alive; }
     const now = performance.now();
@@ -334,13 +334,43 @@ export class UI {
     $('rtsPanel').innerHTML = top + tabs + `<div class="rlist">${list}</div>`;
   }
 
+  // la carte du tutoriel (en haut) : le Sergent, l'objectif, l'étape
+  tuto(S, i, n) {
+    let d = $('tuto');
+    if (!S) { if (d) d.remove(); $('hud').classList.remove('tuto-on'); this.tutoSel = undefined; return; }
+    if (!d) {
+      d = document.createElement('div'); d.id = 'tuto'; d.className = 'rtsOnly';
+      d.addEventListener('pointerdown', (e) => e.stopPropagation());
+      d.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (e.target.closest('[data-tuto=skip]') && this.rts && this.rts.tuto) this.rts.tuto.skip();
+      });
+      $('hud').appendChild(d);
+    }
+    $('hud').classList.add('tuto-on');
+    d.innerHTML = `<img src="assets/sergent2/${S.face.replace('sg', 'sg_')}.webp" alt="">
+      <div class="tt"><small>${S.last ? 'TUTO TERMINÉ !' : `ÉTAPE ${i + 1} / ${n}`}${S.reward ? ` · 🎁 +${S.reward}` : ''}</small><p>${S.text}</p></div>
+      ${S.last ? '' : '<button class="tskip" data-tuto="skip">Passer</button>'}`;
+    d.classList.remove('pop'); void d.offsetWidth; d.classList.add('pop');
+  }
+
+  // fait clignoter le bouton à toucher
+  tutoTarget(sel) {
+    if (sel === this.tutoSel && (!sel || document.querySelector('.tuto-hl'))) return;
+    this.tutoSel = sel;
+    document.querySelectorAll('.tuto-hl').forEach((e) => e.classList.remove('tuto-hl'));
+    if (!sel) return;
+    const el = document.querySelector(`#rtsPanel [data-r="${sel}"]`);
+    if (el) { el.classList.add('tuto-hl'); try { el.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (e) { /* rien */ } }
+  }
+
   powersHud(r) {
     const el = $('powers');
     const html = Object.entries(POWERS).map(([id, P]) => {
       const cd = Math.ceil(r.pcd[id] || 0), poor = P.cost && r.money < P.cost;
       const pct = cd ? Math.round(100 - (r.pcd[id] / P.cd) * 100) : 100;
       // quand un pouvoir redevient prêt : il brille et le pilote prévient
-      if (this.pwWasWaiting && this.pwWasWaiting[id] && !cd && r.active) { this.pwReady = this.pwReady || {}; this.pwReady[id] = performance.now(); if (id !== 'mega') this.radio(`${P.name} : la Flotte est prête !`, 'pilote'); }
+      if (this.pwWasWaiting && this.pwWasWaiting[id] && !cd && r.active) { this.pwReady = this.pwReady || {}; this.pwReady[id] = performance.now(); if (id === 'strike') this.radio(`${P.name} : la Flotte est prête !`, 'pilote'); }
       (this.pwWasWaiting = this.pwWasWaiting || {})[id] = !!cd;
       const fresh = this.pwReady && performance.now() - (this.pwReady[id] || 0) < 2500;
       return `<button class="pw ${cd || poor ? 'wait' : ''} ${r.power === id ? 'on' : ''} ${fresh ? 'ready' : ''}" data-p="${id}" title="${P.name}" style="--p:${pct}%">

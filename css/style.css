@@ -390,3 +390,22 @@ body.phone #mmframe { top: 88px; right: 16px; width: 100px; height: 100px; }
 .pw.wait i { background: conic-gradient(rgba(255,210,63,.55) var(--p), rgba(20,10,30,.7) 0); font-family: 'Luckiest Guy', sans-serif; font-size: 20px; text-shadow: 0 2px 0 #000; }
 .pw.ready { animation: pwReady .5s ease-in-out 5 alternate; }
 @keyframes pwReady { from { transform: scale(1); filter: drop-shadow(0 0 0 #ffd23f); } to { transform: scale(1.18); filter: drop-shadow(0 0 12px #ffd23f); } }
+
+/* tutoriel guidé de la première base */
+#tuto { position: absolute; top: 56px; left: 8px; right: 150px; max-width: 460px; z-index: 30; display: flex; align-items: center; gap: 8px;
+  background: linear-gradient(#fff8dc, #f1e3b4); color: #3a2412; border: 3px solid #3a2412; border-radius: 14px; padding: 6px 8px 6px 4px;
+  box-shadow: 0 5px 0 rgba(0,0,0,.35); pointer-events: auto; }
+#tuto.pop { animation: tutoPop .45s cubic-bezier(.2,1.5,.4,1); }
+@keyframes tutoPop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#tuto img { width: 58px; height: 58px; object-fit: contain; flex: none; margin: -10px 0 -6px; filter: drop-shadow(0 2px 0 rgba(0,0,0,.3)); }
+#tuto .tt { flex: 1; min-width: 0; }
+#tuto small { display: block; font-family: var(--army); color: #b3261e; font-size: 11px; letter-spacing: 1px; }
+#tuto p { margin: 2px 0 0; font-size: 14px; line-height: 1.2; }
+#tuto p b { color: #2e6b12; }
+#tuto .tskip { flex: none; align-self: flex-start; font-size: 11px; padding: 3px 7px; border-radius: 8px; border: 2px solid #3a2412; background: #e8d9a8; color: #3a2412; }
+#hud.rts.tuto-on #radio { top: auto; bottom: 200px; }
+.tuto-hl { position: relative; z-index: 5; animation: tutoHl .55s ease-in-out infinite alternate !important; box-shadow: 0 0 0 4px #ffd23f, 0 0 18px 6px rgba(255,210,63,.9) !important; }
+@keyframes tutoHl { from { transform: scale(1); } to { transform: scale(1.1); } }
+@media (max-width: 520px) { #tuto { right: 128px; } #tuto p { font-size: 12.5px; } #tuto img { width: 46px; height: 46px; } }
+#tuto { top: calc(max(8px, env(safe-area-inset-top)) + 52px); }
+body.phone #tuto { top: 84px; left: 14px; }
