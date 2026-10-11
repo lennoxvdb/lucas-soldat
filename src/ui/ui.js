@@ -118,7 +118,7 @@ export class UI {
     const s = slides[i];
     const d = this.show(`
       <div class="story-dots">${slides.map((_, k) => `<span class="${k === i ? 'on' : ''}"></span>`).join('')}</div>
-      ${s.img ? `<img class="story-img" src="${s.img}" alt="">` : `<div class="story-emoji">${s.emoji}</div>`}
+      ${s.img ? `<img class="story-img" src="${s.img}" alt=""${s.alt ? ` onerror="this.onerror=null;this.src='${s.alt}'"` : ''}>` : `<div class="story-emoji">${s.emoji}</div>`}
       <div class="story-text outline">${s.text}</div>
       <div>
         <button class="btn green" data-act="storyNext">${i === slides.length - 1 ? s.last || 'EN AVANT !' : 'SUITE ➜'}</button>
@@ -143,7 +143,7 @@ export class UI {
       <div class="card-brief">
         <div class="stamp">ORDRE DE MISSION</div><br>
         Tiens bon pendant <b>${dur}</b> contre les monstres Prout.<br>
-        ${M.ship ? 'Ensuite, un <b>vaisseau de la Flotte</b> viendra déposer<br>des <b>soldats</b> pour construire ta base !'
+        ${M.ship ? 'Ton équipe a reçu ton <b>SOS</b> : un vaisseau de la Flotte<br>arrive avec des <b>soldats</b> pour construire la base !'
     : `Ensuite, dégonfle le gardien <b>${M.boss.name}</b><br>pour récupérer <b>${M.icon} ${M.part}</b> du vaisseau.`}
       </div>
       <div class="hint">${ctrl}</div>
@@ -162,7 +162,8 @@ export class UI {
       <img class="mis-img" src="assets/missions/mis_${mission + 1}.webp" alt="">
       <div class="card-brief">
         <div class="stamp">OPÉRATION BASE</div><br>
-        Construis ta <b>base</b> autour de ton vaisseau écrasé.<br>
+        Ton équipe est là ! Construis la <b>base</b> autour de ton vaisseau.<br>
+        Pose des <b>pompes à gaz</b> sur les geysers verts : c’est le trésor de la planète !<br>
         Récolte des <b>haricots</b> pour construire des défenses et fabriquer une <b>armée</b>.<br>
         Puis détruis les <b>${M.nests} nids</b> de monstres pour trouver <b>${M.part}</b> !
       </div>

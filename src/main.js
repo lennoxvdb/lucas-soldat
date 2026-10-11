@@ -13,14 +13,16 @@ const $ = (id) => document.getElementById(id);
 const STORY = [
   { img: 'assets/bd/bd_1.webp', text: 'Lucas a toujours rêvé d’être <b>soldat de l’espace</b>.' },
   { img: 'assets/bd/bd_2.webp', text: 'Le grand jour arrive : il part en mission à bord de son petit vaisseau spatial !' },
-  { img: 'assets/bd/bd_3.webp', text: 'Mais le GPS confond « Planète <b>Mars</b> » et « Planète <b>Prout</b> »…' },
-  { img: 'assets/bd/bd_4.webp', text: 'CRAAASH ! Le vaisseau s’écrase chez les <b>monstres Prout</b>. Ici, tout pue !' },
-  { img: 'assets/bd/bd_5.webp', text: 'Pour rentrer, retrouve les <b>5 pièces</b> du vaisseau… et méfie-toi de l’<b>Empereur Pétaros</b> !', last: 'À L’ATTAQUE !' },
+  { img: 'assets/bd/bd_3.webp', text: 'Mais le GPS confond « Planète <b>Mars</b> » et « Planète <b>Prout</b> »… Lucas se <b>trompe de route</b> !' },
+  { img: 'assets/bd/bd_4.webp', text: 'Atterrissage en catastrophe sur la planète Prout ! Partout, du <b>gaz</b> sort du sol…' },
+  { img: 'assets/bd/bd_7.webp', alt: 'assets/portraits/por_1.webp', text: 'Lucas a une idée géniale : ce gaz, c’est un <b>trésor</b> ! De l’énergie pour toute la Fédération ! Il envoie un <b>SOS</b> à son équipe : « Venez m’aider à construire une base ! »' },
+  { img: 'assets/bd/bd_5.webp', text: 'Mais les <b>monstres Prout</b> ne veulent pas partager leur gaz ! Tiens bon jusqu’à l’arrivée de ton équipe… et méfie-toi de l’<b>Empereur Pétaros</b> !', last: 'À L’ATTAQUE !' },
 ];
 const ENDING = [
-  { img: 'assets/vaisseaux/vais_2.webp', text: 'Le vaisseau est réparé ! Les 5 pièces sont en place.' },
-  { img: 'assets/portraits/por_7.webp', text: 'L’Empereur Pétaros s’envole en couinant, tout dégonflé.' },
-  { img: 'assets/bd/bd_6.webp', text: 'Lucas rentre enfin à la maison… mais il sent encore un peu le prout.' },
+  { img: 'assets/portraits/por_7.webp', text: 'L’Empereur Pétaros s’envole en couinant, tout dégonflé. La planète est libre !' },
+  { img: 'assets/bd/bd_8.webp', alt: 'assets/menu.webp', text: 'La base est terminée : les <b>pompes à gaz</b> envoient l’énergie de la planète Prout à toute la Fédération !' },
+  { img: 'assets/qg/qg_6.webp', text: 'Le vaisseau de Lucas est réparé : les 5 pièces sont en place, il brille comme un neuf !' },
+  { img: 'assets/bd/bd_6.webp', text: 'Lucas rentre à la maison en héros. Son équipe garde la base… (et lui sent encore un peu le prout).' },
   { img: 'assets/portraits/por_4.webp', text: '<b>FIN</b><br>Bravo, Soldat Lucas ! Tu es un vrai héros de la Fédération.', last: '🏆 MENU' },
 ];
 

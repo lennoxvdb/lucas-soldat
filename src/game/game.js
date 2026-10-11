@@ -61,7 +61,7 @@ export const UPGRADES = {
 const HEAL_CARD = { id: 'heal', icon: '🍔', img: 'assets/objets/obj_12.webp',  name: 'Gros sandwich', desc: () => 'Rend 50 points de vie.' };
 
 const RADIO = {
-  start: ['Soldat Lucas ! Tiens bon, on cherche les pièces de ton vaisseau !', 'Pince-toi le nez, soldat, et dégonfle-les tous !', 'Bienvenue sur la planète Prout. Ça sent… très fort.'],
+  start: ['Soldat Lucas ! Tiens bon, on cherche les pièces de ton vaisseau !', 'Ce gaz va éclairer toute la Fédération, soldat ! Protège-le !', 'Pince-toi le nez, soldat, et dégonfle-les tous !', 'Bienvenue sur la planète Prout. Ça sent… très fort.'],
   random: ['Ils sont des milliers… mais ils sentent mauvais !', 'Le seul bon monstre, c’est un monstre dégonflé !', 'Allez soldat, tu veux vivre pour toujours ?!', 'Le service garantit les bonbons !',
     'Ne respire que par la bouche, soldat !', 'Les geysers verts envoient les monstres en l’air, sers-t’en !', 'Les marais collent aux pieds, évite-les !', 'Ramasse les haricots, ils te rendent plus fort !'],
   horde: ['ALERTE ! Une horde arrive de partout !', 'Ils sortent des terriers ! Tenez la position !'],
@@ -228,7 +228,7 @@ export class Game {
     this.ui.setWeapons(this.p);
     // Lucas a de l'expérience : une amélioration à choisir par mission déjà gagnée
     this.startBonus = index;
-    if (MISSIONS[index].ship) this.radio(`Tiens bon ${this.mTime} secondes, soldat ! La Flotte t’envoie des renforts !`, 1);
+    if (MISSIONS[index].ship) this.radio(`SOS bien reçu, Lucas ! Ton équipe arrive dans ${this.mTime} secondes, tiens bon !`, 1);
     else this.radio(pick(RADIO.start), 1);
     this.ui.banner(`MISSION ${index + 1}`, 'Tiens bon et dégonfle les monstres !');
   }

@@ -24,7 +24,7 @@ export const BUILDINGS = {
   medic: { name: 'Tente médicale', img: Bt(6), cost: 200, size: 1, hp: 160, time: 5, range: 7, desc: 'Soigne les soldats' },
   mortar: { name: 'Lance-bombes', img: Bt(7), cost: 250, size: 1, hp: 170, time: 6, range: 15, min: 3.5, dmg: 32, cd: 2.6, need: 3, desc: 'Bombes de loin' },
   fan: { name: 'Ventilateur géant', icon: '🌀', img: Bt(8), cost: 120, size: 1, hp: 150, time: 4, range: 6, need: 3, desc: 'Ralentit les monstres' },
-  pump: { name: 'Pompe à gaz', icon: '⛽', img: Bt(9), cost: 250, size: 1, hp: 200, time: 5, income: 6, geyser: true, need: 3, desc: 'Sur un geyser' },
+  pump: { name: 'Pompe à gaz', icon: '⛽', img: Bt(9), cost: 250, size: 1, hp: 200, time: 5, income: 6, geyser: true, desc: 'Sur un geyser : le trésor !' },
   garage: { name: 'Garage', icon: '🏭', img: Bt(10), cost: 500, size: 2, hp: 520, time: 9, need: 3, desc: 'Chars à prout' },
 };
 // Les pouvoirs de la Flotte (comme dans Starship Troopers) : on touche le bouton, puis l'endroit sur la carte
@@ -275,7 +275,7 @@ export class Rts {
     this.flowDirty = true;
     this.g.camTarget.set(HQ_POS.x + 2, 0, HQ_POS.z + 3);
     this.g.setZoom(1.2);
-    this.g.radio(opts.fromShip ? 'Les renforts sont là ! On construit une base autour de mon vaisseau !' : 'Soldat Lucas ! Construis ta base autour du vaisseau et détruis les nids de monstres !', opts.fromShip ? 'lucas' : 1);
+    this.g.radio(opts.fromShip ? 'Mon équipe a reçu mon SOS ! On construit la base et on exploite le gaz !' : 'Soldat Lucas ! Agrandis la base, pompe le gaz et détruis les nids de monstres !', opts.fromShip ? 'lucas' : 1);
   }
 
   rand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
@@ -876,6 +876,7 @@ export class Rts {
     this.hintT += dt;
     const H = [
       [6, () => !this.has('farm'), 'Construis un Champ de haricots pour gagner plus de haricots !', 'sg2'],
+      [14, () => !this.has('pump'), 'Les geysers verts, c’est le trésor de la planète ! Pose une Pompe à gaz dessus !', 'sg2'],
       [22, () => !this.buildings.some((b) => b.type === 'turret'), 'Mets des Tourelles à prout autour du vaisseau !', 'sg3'],
       [40, () => !this.has('barracks'), 'Construis une Caserne pour fabriquer des soldats !', 'sg5'],
       [120, () => !this.has('radio'), 'Une Tour radio rend les pouvoirs de la Flotte plus rapides et montre loin dans le brouillard !', 'sg6'],

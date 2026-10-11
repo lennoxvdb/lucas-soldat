@@ -23,6 +23,12 @@ ne pas toucher au port 3000, pas de tests sur son téléphone branché).
 - Clins d'œil Starship Troopers : hordes qui sortent des terriers, « Sergent Pouet » à la radio,
   « La Fédération des bonbons », « Voulez-vous en savoir plus ? ».
 
+## Histoire (voulue par l'utilisateur)
+Lucas se trompe de route (GPS) et atterrit sur la planète Prout. Il découvre que son gaz est un trésor (énergie pour toute la Fédération),
+envoie un SOS à son équipe, qui vient construire une base pour exploiter le gaz (pompes sur les geysers). Les monstres et l'Empereur Pétaros
+défendent leur gaz. Le vaisseau a été abîmé à l'atterrissage : une pièce par mission. Fin : base finie, gaz envoyé à la Fédération,
+Lucas rentre en héros. Textes : `STORY` / `ENDING` dans `src/main.js` (`bd_7` SOS et `bd_8` base finie : dessins à venir, `alt` = dessin de secours).
+
 ## Missions (héros et base en alternance, choix de l'utilisateur)
 1 héros (40 s, puis un vaisseau de la Flotte dépose des renforts et on enchaîne directement sur la base, Lucas y est une unité) · 2 base (3 nids) · 3 héros · 4 base (5 nids, tout débloqué) · 5 héros (Empereur Pétaros).
 Bâtiments, chars, récolteurs, nids et tas de haricots = dessins Gemini (`assets/base`, planches `batiments` et `vehicules_nids`) ; les murs restent en 3D (ils ont un sens).
