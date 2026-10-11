@@ -189,7 +189,9 @@ export class Rts {
     this.money = 800;
     this.t = 0;
     this.waveN = 0;
-    this.waveT = 110;
+    this.waveT = mi <= 1 ? 150 : 120;
+    this.awake = false;
+    this.calmT = mi <= 1 ? 60 : 35; // au début, les nids dorment : on a le temps de construire
     this.hintT = 0; this.hint = 0;
     this.tab = 'build';
     this.uiDirty = true;
@@ -895,8 +897,9 @@ export class Rts {
     this.waveT -= dt;
     const alive = this.nests.filter((n) => n.hp > 0);
     const cap = g.ui.isMobile ? 90 : 120;
+    if (!this.awake && this.t >= this.calmT) { this.awake = true; g.radio('Les nids se réveillent ! Des monstres arrivent, protège la base !', 'sg5'); }
     const types = () => {
-      const r = Math.random(), t = this.t + this.mi * 40;
+      const r = Math.random(), t = this.t + this.mi * 25;
       if (t > 150 && r < 0.1) return 'tank';
       if (t > 70 && r < 0.22) return 'vomi';
       if (t > 45 && r < 0.36) return 'proute';
@@ -922,9 +925,11 @@ export class Rts {
         if (NM === this.sp.veh_6 && n.spr.userData.k !== 6) { n.spr.userData.k = 6; n.spr.scale.set(6, 6 / NM.aspect, 1); }
       }
       n.hitT = (n.hitT || 0) - dt;
+      if (this.t < this.calmT) continue;
       n.spawnT -= dt;
       if (n.spawnT <= 0) {
-        n.spawnT = Math.max(5, 11 - this.t / 40) * (0.8 + Math.random() * 0.4);
+        // quelques monstres au début, de plus en plus ensuite
+        n.spawnT = Math.max(6, 16 - (this.t - this.calmT) / 25) * (0.8 + Math.random() * 0.4);
         n.outT = 0.9;
         if (g.monsters.length < cap) {
           const a = Math.random() * 6.28;
@@ -939,7 +944,7 @@ export class Rts {
       g.ui.banner('ATTAQUE !', `Vague ${this.waveN}`);
       g.sfx.alarm();
       for (const n of alive) {
-        const cnt = 4 + this.waveN * 2 + this.mi;
+        const cnt = 2 + this.waveN * 2 + Math.floor(this.mi / 2);
         if (this.waveN >= 2 && (n.queen || Math.random() < 0.3)) this.spawnGuardian(n);
         for (let i = 0; i < cnt && g.monsters.length < cap + 30; i++) {
           const a = Math.random() * 6.28;
