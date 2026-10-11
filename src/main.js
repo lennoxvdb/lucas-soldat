@@ -335,6 +335,7 @@ const app = {
         break;
       case 'go':
         ui.clear();
+        game.practice = false;
         game.parts = save.parts;
         game.startMission(Math.min(save.parts, MISSIONS.length - 1));
         sfx.startMusic();
@@ -347,11 +348,19 @@ const app = {
         // fin de la mission 1 : on reste sur place, les renforts sont là, on construit !
         const lucasPos = { x: game.p.pos.x, z: game.p.pos.z };
         trophy.unlock('ship');
+        game.practice = false;
         ui.clear();
         game.parts = save.parts;
         game.startMission(Math.min(save.parts, MISSIONS.length - 1), { fromShip: true, lucasPos });
         break;
       }
+      case 'learn':
+        // entraînement : le tuto de la base, sans toucher à la progression
+        try { localStorage.removeItem('ls_tuto_base'); } catch (e) { /* rien */ }
+        ui.clear(); game.practice = true; game.parts = save.parts;
+        game.startMission(1, { fromShip: true });
+        sfx.startMusic();
+        break;
       case 'ending': trophy.unlock('home'); startStory(ENDING, toMenu); break;
       case 'trophies': ui.trophies(trophy); break;
     }
@@ -368,7 +377,7 @@ const app = {
     clampCam();
   },
   skill() { if (game) game.useSkill(); },
-  missionWon(i) { save.parts = Math.max(save.parts, i + 1); persist(); return save.parts; },
+  missionWon(i) { if (game.practice) return save.parts; save.parts = Math.max(save.parts, i + 1); persist(); return save.parts; },
 };
 const ui = new UI(app);
 document.addEventListener('visibilitychange', () => { if (document.hidden && game && game.state === 'play') app.pause(); });

@@ -99,6 +99,7 @@ export class UI {
         <button class="btn small ghost" data-act="trophies">🏆 Trophées ${this.app.trophy ? this.app.trophy.count() : 0}/${TROPHIES.length}</button>
         <button class="btn small ghost" data-act="sound">${this.app.sfx.on ? '🔊 Son' : '🔇 Son'}</button>
       </div>
+      <button class="btn small ghost" data-act="learn">🎓 Apprendre à construire</button>
       <button class="btn small ghost diffbtn" data-act="diff">${(DIFFS[save.diff] || DIFFS.facile).icon} Difficulté : <b>${(DIFFS[save.diff] || DIFFS.facile).name}</b></button>
       <div class="know" data-act="story">« Voulez-vous en savoir plus ? »</div>
       ${window.GAME_VERSION ? `<div class="version">version ${window.GAME_VERSION}</div>` : ''}
