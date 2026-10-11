@@ -12,8 +12,11 @@ $env:KEYSTORE_FILE = "$sig\lucas-soldat.jks"
 $env:KEYSTORE_PASSWORD = $pw
 $env:KEY_PASSWORD = $pw
 $env:KEY_ALIAS = 'lucassoldat'
-$version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+# même numéro que GitHub Pages : 1.0.<nombre d'envois> (à lancer après le commit)
+$n = (git rev-list --count HEAD).Trim()
+$version = "1.0.$n"
 $env:VERSION_NAME = $version
+$env:VERSION_CODE = $n
 node tools/build_www.mjs $version
 npx cap sync android
 Set-Location android

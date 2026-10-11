@@ -90,7 +90,8 @@ export class UI {
     const label = done ? '🏆 REJOUER' : (save.parts ? `▶ JOUER — MISSION ${save.parts + 1}` : '▶ JOUER');
     this.show(`
       <div class="propaganda">LA FÉDÉRATION DES BONBONS PRÉSENTE</div>
-      <img class="logo" src="assets/logo/logo_1.webp" alt="Lucas Soldat : Opération Planète Prout">
+      <img class="logo" src="assets/logo/starshiprout.webp" alt="Starshiprout" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="textlogo" style="display:none"><b>STARSHIPROUT</b><span>Lucas, le héros de la planète Prout</span></div>
       ${this.partsRow(save.parts)}
       <button class="btn green" data-act="play">${label}</button>
       <div>

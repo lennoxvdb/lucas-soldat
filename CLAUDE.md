@@ -1,4 +1,6 @@
-# Lucas Soldat : Opération Planète Prout
+# Starshiprout : Lucas, le héros de la planète Prout
+
+Nom du jeu choisi par l'utilisateur : **Starshiprout** (héros : Lucas). Ancien nom : « Lucas Soldat : Opération Planète Prout » (dépôt et appId gardent `lucas-soldat`).
 
 Jeu web (Three.js) dans l'esprit de Starship Troopers, version cartoon pour enfants.
 Cahier des charges d'origine : `C:\Users\Miss_\Downloads\lucas soldat.md`

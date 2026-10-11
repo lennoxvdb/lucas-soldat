@@ -377,3 +377,11 @@ body.phone #mmframe { top: 88px; right: 16px; width: 100px; height: 100px; }
 /* écran titre : grand décor du menu */
 .screen.menubg { background: linear-gradient(rgba(18,8,28,.55), rgba(18,8,28,0) 40%, rgba(18,8,28,0) 60%, rgba(18,8,28,.7)), url('../assets/menu.webp') center / cover no-repeat, #1a0f24; }
 .screen.menubg .logo { max-height: 34vh; }
+
+/* logo écrit (en attendant le logo dessiné « Starshiprout ») */
+.textlogo { flex-direction: column; align-items: center; gap: 4px; animation: bob 1.4s ease-in-out infinite alternate; margin: 4px 0 8px; }
+.textlogo b { font-family: 'Luckiest Guy', sans-serif; font-weight: normal; font-size: clamp(40px, 11vw, 92px); line-height: .95; letter-spacing: 2px;
+  color: #ffd84a; -webkit-text-stroke: 3px #3a2412; paint-order: stroke fill;
+  text-shadow: 0 6px 0 #3a2412, 0 0 24px rgba(156,255,58,.75), 0 0 6px rgba(156,255,58,.9); transform: rotate(-3deg); }
+.textlogo span { font-family: 'Luckiest Guy', sans-serif; font-size: clamp(14px, 3.6vw, 24px); color: #fff; background: #4f8a1f;
+  border: 3px solid #3a2412; border-radius: 10px; padding: 4px 14px 2px; box-shadow: 0 4px 0 #3a2412; transform: rotate(-2deg); }

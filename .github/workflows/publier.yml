@@ -19,9 +19,6 @@ concurrency:
   group: publier
   cancel-in-progress: false
 
-env:
-  VERSION_NAME: 1.0.${{ github.run_number }}
-  VERSION_CODE: ${{ github.run_number }}
 
 jobs:
   site:
@@ -31,6 +28,13 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Numéro de version (nombre d'envois)
+        run: |
+          N=$(git rev-list --count HEAD)
+          echo "VERSION_NAME=1.0.$N" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$N" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -52,6 +56,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Numéro de version (nombre d'envois)
+        run: |
+          N=$(git rev-list --count HEAD)
+          echo "VERSION_NAME=1.0.$N" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$N" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -84,5 +95,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v$VERSION_NAME" lucas-soldat.apk lucas-soldat.aab \
-            --title "Lucas Soldat $VERSION_NAME" \
+            --title "Starshiprout $VERSION_NAME" \
             --notes "Appli Android : télécharge **lucas-soldat.apk** sur le téléphone et ouvre-le pour l'installer. Les mises à jour du jeu arrivent ensuite toutes seules."

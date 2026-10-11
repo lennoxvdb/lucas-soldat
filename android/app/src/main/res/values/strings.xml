@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Lucas Soldat</string>
-    <string name="title_activity_main">Lucas Soldat</string>
+    <string name="app_name">Starshiprout</string>
+    <string name="title_activity_main">Starshiprout</string>
     <string name="package_name">com.lennoxvdb.lucassoldat</string>
     <string name="custom_url_scheme">com.lennoxvdb.lucassoldat</string>
 </resources>
