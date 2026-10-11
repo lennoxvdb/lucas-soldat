@@ -1,7 +1,7 @@
 // Le mode « base et armée » à la Command & Conquer : on construit autour de la fusée,
 // on récolte des haricots, on fabrique une armée et on détruit les nids de monstres.
 import * as THREE from 'three';
-import { toon, toonMat, InstPool, spriteMats, outlineGeo, outlineMat } from '../engine/gfx.js';
+import { toon, toonMat, InstPool, spriteMats, outlineGeo, outlineMat, canvasTex } from '../engine/gfx.js';
 import { ARENA } from '../world/world.js';
 import { mergeGeometries } from '../../lib/BufferGeometryUtils.js';
 import { Trooper } from '../entities/hero3d.js';
@@ -17,6 +17,7 @@ const O = (n) => `assets/objets/obj_${n}.webp`;
 const Bt = (n) => `assets/icones2/ic_${n}.webp`;
 export const BUILDINGS = {
   wall: { name: 'Mur de sacs', icon: '🧱', img: Bt(1), cost: 25, size: 1, hp: 260, time: 1.2, desc: 'Bloque les monstres' },
+  gate: { name: 'Porte fortifiée', icon: '🚧', cost: 60, size: 1, hp: 700, time: 2, desc: 'Tes soldats passent, pas les monstres (se pose aussi sur un mur)' },
   turret: { name: 'Tourelle à prout', img: Bt(2), cost: 150, size: 1, hp: 170, time: 4, range: 9, dmg: 9, cd: 0.55, desc: 'Tire du gaz' },
   farm: { name: 'Champ de haricots', img: Bt(3), cost: 200, size: 2, hp: 220, time: 5, income: 2.5, desc: '+haricots' },
   barracks: { name: 'Caserne', icon: '⛺', img: Bt(4), cost: 300, size: 2, hp: 420, time: 7, desc: 'Soldats et chiens' },
@@ -78,6 +79,7 @@ export class Rts {
     this.occ = new Int32Array(N * N);
     this.flow = new Float32Array(N * N);
     this.swamp = new Uint8Array(N * N);
+    this.gateCell = new Uint8Array(N * N); // les cases des portes : les soldats passent
     this.staticColliders = game.colliders.slice();
     const tex = game.tex;
     this.soldierF = [1, 2, 8].map((i) => spriteMats(tex['lucas_' + i], tex.meta['lucas_' + i]));
@@ -192,7 +194,7 @@ export class Rts {
     this.waveT = mi <= 1 ? 150 : 120;
     this.awake = false;
     this.calmT = mi <= 1 ? 60 : 35; // au début, les nids dorment : on a le temps de construire
-    this.hintT = 0; this.hint = 0;
+    this.hintT = 0; this.hint = 0; this.gateTip = false;
     this.tab = 'build';
     this.uiDirty = true;
     this.nextId = 1;
@@ -397,7 +399,7 @@ export class Rts {
     for (const [a, b] of cells) {
       if (a < 0 || b < 0 || a >= N || b >= N) return no('Pas ici, c’est le bord de la carte !');
       const k = b * N + a;
-      if (this.occ[k]) return no('Il y a déjà quelque chose ici !');
+      if (this.occ[k] && !(type === 'gate' && (this.byId.get(this.occ[k]) || {}).type === 'wall')) return no('Il y a déjà quelque chose ici !');
       if (this.stat[k]) return no('Pas ici : il y a un rocher ou un champignon !');
     }
     const cx = ctr(ix) + (B.size - 1) * CS / 2, cz = ctr(iz) + (B.size - 1) * CS / 2;
@@ -417,11 +419,12 @@ export class Rts {
     const B = BUILDINGS[type];
     if (!this.canPlace(type, ix, iz) || !this.canAfford(B.cost)) return false;
     this.money -= B.cost;
+    if (type === 'gate') { const w = this.byId.get(this.occ[iz * N + ix]); if (w && w.type === 'wall') this.removeEnt(w); }
     const cx = ctr(ix) + (B.size - 1) * CS / 2, cz = ctr(iz) + (B.size - 1) * CS / 2;
     const b = { kind: 'building', type, B, id: this.nextId++, wrot: rot, x: cx, z: cz, r: B.size === 2 ? 1.9 : 1.05, hp: B.hp * 0.25, maxHp: B.hp, built: 0,
       cells: [], queue: [], prog: 0, cd: 0, rot: 0, h: B.size === 2 ? 3 : 2.2 };
     if (type === 'pump') { const gy = this.g.world.geysers.find((g) => (g.x - cx) ** 2 + (g.z - cz) ** 2 < 4); if (gy) gy.capped = true; }
-    for (const [a, c] of this.cellsFor(type, ix, iz)) { const k = c * N + a; this.occ[k] = b.id; b.cells.push(k); }
+    for (const [a, c] of this.cellsFor(type, ix, iz)) { const k = c * N + a; this.occ[k] = b.id; b.cells.push(k); if (type === 'gate') this.gateCell[k] = 1; }
     if (type !== 'wall') {
       b.obj = this.makeBuilding(type);
       b.obj.position.set(cx, 0, cz);
@@ -429,7 +432,7 @@ export class Rts {
       this.scene.add(b.obj);
     }
     if (type === 'wall') this.g.trophy.add('walls'); else if (type === 'turret') this.g.trophy.unlock('turret');
-    b.col = { x: cx, z: cz, r: b.r };
+    b.col = { x: cx, z: cz, r: b.r, gate: type === 'gate' };
     this.g.colliders.push(b.col);
     this.buildings.push(b);
     this.byId.set(b.id, b);
@@ -440,7 +443,26 @@ export class Rts {
     return true;
   }
 
+  makeGate(ghost = false) {
+    const grp = new THREE.Group();
+    if (!this.gateMats) {
+      const stripes = canvasTex(64, 16, (c, w, h) => { c.fillStyle = '#ffd23f'; c.fillRect(0, 0, w, h); c.fillStyle = '#2a1a10'; for (let x = -16; x < w; x += 16) { c.beginPath(); c.moveTo(x, h); c.lineTo(x + 8, 0); c.lineTo(x + 16, 0); c.lineTo(x + 8, h); c.fill(); } });
+      this.gateMats = { bar: new THREE.MeshToonMaterial({ map: stripes }), post: toonMat(0xb89a5e), cap: toonMat(0x6b7a3a) };
+    }
+    const mk = (geo, mat) => { const m = new THREE.Mesh(geo, ghost ? mat.clone() : mat); if (ghost) { m.material.transparent = true; m.material.opacity = 0.7; } m.castShadow = !ghost; return m; };
+    for (const s of [-1, 1]) {
+      const post = mk(new THREE.CylinderGeometry(0.42, 0.5, 1.7, 10), this.gateMats.post); post.position.set(s * 0.85, 0.85, 0); grp.add(post);
+      const cap = mk(new THREE.CylinderGeometry(0.48, 0.48, 0.22, 10), this.gateMats.cap); cap.position.set(s * 0.85, 1.75, 0); grp.add(cap);
+    }
+    const pivot = new THREE.Group(); pivot.position.set(-0.85, 1.25, 0); grp.add(pivot);
+    const bar = mk(new THREE.BoxGeometry(1.75, 0.26, 0.26), this.gateMats.bar); bar.position.set(0.88, 0, 0); pivot.add(bar);
+    grp.userData.pivot = pivot; grp.userData.gate = true;
+    if (ghost) grp.userData.mat = bar.material;
+    return grp;
+  }
+
   makeBuilding(type, ghost = false) {
+    if (type === 'gate') return this.makeGate(ghost);
     const grp = new THREE.Group();
     const B = BUILDINGS[type], M = this.sp[BSPR[type]];
     const mat = ghost ? new THREE.SpriteMaterial({ map: M.L.map, transparent: true, opacity: 0.75, depthWrite: false }) : M.L;
@@ -464,7 +486,7 @@ export class Rts {
       this.sel.delete(e);
     } else {
       if (e.obj) this.scene.remove(e.obj);
-      for (const k of e.cells) this.occ[k] = 0;
+      for (const k of e.cells) { this.occ[k] = 0; this.gateCell[k] = 0; }
       const i = this.g.colliders.indexOf(e.col); if (i >= 0) this.g.colliders.splice(i, 1);
       this.buildings = this.buildings.filter((b) => b !== e);
       if (this.selB === e) this.selB = null;
@@ -511,7 +533,7 @@ export class Rts {
   }
 
   // ------------------------------------------------------------------ chemins
-  passable(k) { return !this.stat[k] && !this.occ[k]; }
+  passable(k) { return !this.stat[k] && (!this.occ[k] || this.gateCell[k] === 1); }
 
   computeFlow() {
     // carte des distances jusqu'à la fusée : les monstres la suivent.
@@ -623,7 +645,7 @@ export class Rts {
       let bd = 8 * 8;
       for (const u of this.units) { const d = (u.x - m.pos.x) ** 2 + (u.z - m.pos.z) ** 2; if (d < bd) { bd = d; m.tgt = u; } }
       for (const b of this.buildings) {
-        if (b.type === 'wall') continue;
+        if (b.type === 'wall' || b.type === 'gate') continue;
         const d = (b.x - m.pos.x) ** 2 + (b.z - m.pos.z) ** 2 - b.r * b.r;
         if (d < bd) { bd = d; m.tgt = b; }
       }
@@ -876,6 +898,10 @@ export class Rts {
 
   hints(dt) {
     this.hintT += dt;
+    if (!this.gateTip && this.buildings.filter((b) => b.type === 'wall').length >= 4 && !this.buildings.some((b) => b.type === 'gate')) {
+      this.gateTip = true;
+      g_radio(this.g, 'Astuce : pose une Porte fortifiée sur ton mur, tes soldats pourront sortir ! Pour enlever un mur : touche-le, puis 💥 Démolir.', 'sg2');
+    }
     const H = [
       [6, () => !this.has('farm'), 'Construis un Champ de haricots pour gagner plus de haricots !', 'sg2'],
       [14, () => !this.has('pump'), 'Les geysers verts, c’est le trésor de la planète ! Pose une Pompe à gaz dessus !', 'sg2'],
@@ -974,7 +1000,7 @@ export class Rts {
         const before = b.built;
         b.built = Math.min(1, b.built + dt / b.B.time);
         b.hp = Math.min(b.maxHp, b.hp + (b.built - before) * b.maxHp * 0.75);
-        if (b.obj) {
+        if (b.obj && b.obj.userData.spr) {
           const S = this.sp.bat2_1, spr = b.obj.userData.spr;
           if (S && b.built < 0.85) { spr.material = S.L; spr.scale.set(spr.scale.x, spr.scale.x / S.aspect, 1); b.obj.scale.y = 1; }
           else { const M = b.obj.userData.M; spr.material = M.L; spr.scale.set(spr.scale.x, spr.scale.x / M.aspect, 1); b.obj.scale.y = 0.85 + 0.15 * b.built; }
@@ -1016,7 +1042,7 @@ export class Rts {
       }
       const B = b.B;
       if (!B) continue;
-      if (b.obj) {
+      if (b.obj && b.obj.userData.spr) {
         const lv = BLEVELS[b.type] && this.sp[BLEVELS[b.type][(b.lvl || 1) - 1]];
         const M = ((b.lvl || 1) === 1 && BDAMAGED[b.type] && b.hp < b.maxHp * 0.4 && this.sp[BDAMAGED[b.type]]) || lv || b.obj.userData.M;
         const spr = b.obj.userData.spr;
@@ -1112,7 +1138,7 @@ export class Rts {
         const dx = u.x - o.x, dz = u.z - o.z, rr = (u.r + o.r) * 0.9, d2 = dx * dx + dz * dz;
         if (d2 < rr * rr && d2 > 1e-6) { const d = Math.sqrt(d2), push = (rr - d) * 0.5; u.x += dx / d * push; u.z += dz / d * push; }
       }
-      g.pushOut(u, u.r * 0.9);
+      g.pushOut(u, u.r * 0.9, true);
       const dc = Math.hypot(u.x, u.z);
       if (dc > ARENA - 1) { u.x *= (ARENA - 1) / dc; u.z *= (ARENA - 1) / dc; }
       if (moving) u.walk += dt * 12;
@@ -1281,7 +1307,19 @@ export class Rts {
     const W = this.wallPool, WL = this.wallLine, S = this.segPool, SL = this.segLine;
     W.begin(); WL.begin(); S.begin(); SL.begin();
     const wallAt = new Map();
-    for (const b of this.buildings) if (b.type === 'wall') wallAt.set(b.cells[0], b);
+    for (const b of this.buildings) if (b.type === 'wall' || b.type === 'gate') wallAt.set(b.cells[0], b);
+    // le pilier de la porte du côté de l'autre bout
+    const end = (a, o) => a.type !== 'gate' ? [a.x, a.z] : [a.x + Math.sign(Math.round(o.x - a.x)) * 0.85 * (a.alongX ? 1 : 0), a.z + Math.sign(Math.round(o.z - a.z)) * 0.85 * (a.alongX ? 0 : 1)];
+    for (const b of this.buildings) if (b.type === 'gate' && b.obj) {
+      const ix = b.cells[0] % N, iz = (b.cells[0] / N) | 0;
+      const wx = wallAt.has(iz * N + ix - 1) || wallAt.has(iz * N + ix + 1), wz = wallAt.has((iz - 1) * N + ix) || wallAt.has((iz + 1) * N + ix);
+      b.alongX = wx || !wz;
+      b.obj.rotation.y = b.alongX ? 0 : Math.PI / 2;
+      const near = this.units.some((u) => (u.x - b.x) ** 2 + (u.z - b.z) ** 2 < 3.4 * 3.4);
+      b.open = (b.open || 0) + ((near && b.built >= 1 ? 1 : 0) - (b.open || 0)) * Math.min(1, g.dt60 || 0.15);
+      b.obj.userData.pivot.rotation.z = b.open * 1.35;
+      b.obj.scale.y = 0.4 + 0.6 * b.built;
+    }
     const seg = (ax, az, bx, bz, k, P, PL) => {
       const dx = bx - ax, dz = bz - az, L = Math.hypot(dx, dz), ry = Math.atan2(-dz, dx);
       P.push((ax + bx) / 2, 0, (az + bz) / 2, L / 2, k, 1, ry);
@@ -1290,14 +1328,17 @@ export class Rts {
     this.wallSeg = seg;
     for (const [key, b] of wallAt) {
       const k = 0.4 + 0.6 * b.built;
-      W.push(b.x, 0, b.z, 1, k, 1); WL.push(b.x, 0, b.z, 1, k, 1);
+      if (b.type !== 'gate') { W.push(b.x, 0, b.z, 1, k, 1); WL.push(b.x, 0, b.z, 1, k, 1); }
       const ix = key % N, iz = (key / N) | 0;
       for (const [dx, dz] of [[1, 0], [0, 1], [1, 1], [1, -1]]) {
         const o = wallAt.get((iz + dz) * N + ix + dx);
         if (!o) continue;
         // en diagonale, seulement s'il n'y a pas déjà un coin en L
         if (dx && dz && (wallAt.has(iz * N + ix + dx) || wallAt.has((iz + dz) * N + ix))) continue;
-        seg(b.x, b.z, o.x, o.z, 0.4 + 0.6 * Math.min(b.built, o.built), S, SL);
+        if ((b.type === 'gate' || o.type === 'gate') && dx && dz) continue;
+        if (b.type === 'gate' && o.type === 'gate') continue;
+        const [ax, az] = end(b, o), [bx, bz] = end(o, b);
+        seg(ax, az, bx, bz, 0.4 + 0.6 * Math.min(b.built, o.built), S, SL);
       }
     }
     W.end(); WL.end(); S.end(); SL.end();
@@ -1579,7 +1620,7 @@ export class Rts {
     if (type !== 'wall') {
       // le vrai bâtiment, en transparent
       const obj = this.makeBuilding(type, true);
-      obj.userData.spr.renderOrder = 4;
+      if (obj.userData.spr) obj.userData.spr.renderOrder = 4;
       this.ghostObj = obj;
       this.scene.add(obj);
     }

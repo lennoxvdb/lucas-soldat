@@ -28,7 +28,7 @@ export class UI {
       this.app.sfx.unlock();
       const r = this.rts, [act, arg] = b.dataset.r.split(':');
       if (act === 'tab') { r.tab = arg; r.uiDirty = true; }
-      if (act === 'build') r.startPlace(arg);
+      if (act === 'build') { if (r.place && r.place.type === arg) r.cancelPlace(); else r.startPlace(arg); }
       if (act === 'train') r.train(arg);
       if (act === 'ok') r.confirmPlace();
       if (act === 'cancel') r.cancelPlace();
@@ -306,7 +306,7 @@ export class UI {
       const q = sel.queue.length ? ` — fabrique ${sel.queue.length} ${UNITS[sel.queue[0]].name.toLowerCase()}…` : '';
       top = `<div class="rsel"><span>${name} ❤️ ${Math.round(sel.hp / sel.maxHp * 100)}%${q}</span>
         ${UPGRADE_COST[sel.type] && (sel.lvl || 1) < 3 && sel.built >= 1 ? `<button class="rb ok" data-r="upgrade">⬆ Niveau ${(sel.lvl || 1) + 1} (${UPGRADE_COST[sel.type][(sel.lvl || 1) - 1]})</button>` : ''}
-        ${sel.type !== 'hq' ? '<button class="rb" data-r="sell">💰 Vendre</button>' : ''}<button class="rb" data-r="unsel">✖</button></div>`;
+        ${sel.type !== 'hq' ? `<button class="rb" data-r="sell">${sel.type === 'wall' || sel.type === 'gate' ? '💥 Démolir' : '💰 Vendre'}</button>` : ''}<button class="rb" data-r="unsel">✖</button></div>`;
     }
     const tabs = `<div class="rtabs"><button class="rt ${r.tab === 'build' ? 'on' : ''}" data-r="tab:build">🏗️ Construire</button>
       <button class="rt ${r.tab === 'army' ? 'on' : ''}" data-r="tab:army">🪖 Armée</button>

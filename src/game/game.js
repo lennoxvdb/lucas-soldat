@@ -247,6 +247,7 @@ export class Game {
   update(dt) {
     if (this.state === 'pause' || this.state === 'levelup') return;
     this.time += dt;
+    this.dt60 = dt * 8;
     this.world.update(dt, this.time);
     if (this.state === 'menu') {
       this.menuAngle += dt * 0.08;
@@ -392,8 +393,9 @@ export class Game {
     return false;
   }
 
-  pushOut(pos, r) {
+  pushOut(pos, r, friend = false) {
     for (const c of this.colliders) {
+      if (friend && c.gate) continue; // les portes laissent passer nos soldats
       const dx = pos.x - c.x, dz = pos.z - c.z, rr = c.r + r;
       const d2 = dx * dx + dz * dz;
       if (d2 < rr * rr && d2 > 1e-6) {
