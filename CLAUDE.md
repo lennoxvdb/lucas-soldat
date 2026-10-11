@@ -77,6 +77,7 @@ Les dessins 2D de Lucas restent en secours si le modèle ne charge pas.
 - Ne jamais installer sur le téléphone branché (règle) : l'utilisateur télécharge l'APK depuis le lien de la Release.
 
 ## Équilibrage
+Difficulté au choix sur l'écran titre (`DIFFS` dans `game.js`, sauvegarde `save.diff`) : **Facile par défaut** (dégâts reçus ×0,45, monstres ×0,6, solidité ×0,65, gardiens/nids ×0,6, +600 haricots en base), Normal, Difficile. L'utilisateur trouvait le jeu « injouable, trop dur ».
 `tools/bot_hero.js` : robot qui joue une mission héros (à importer dans la console, `botHero(mission, {skill})`).
 Réglages actuels : montée douce par mission (vitesse d'apparition +12 %/mission, PV +15 %, dégâts +8 %), gardiens 450×(1+0,35×mission),
 et Lucas reçoit une amélioration par mission déjà gagnée au début de chaque mission héros (`startBonus`).

@@ -1,5 +1,5 @@
 // Les écrans (titre, histoire, mission, niveau, fin) et l'affichage par-dessus le jeu.
-import { MISSIONS, UPGRADES, missionTime } from '../game/game.js';
+import { MISSIONS, UPGRADES, missionTime, DIFFS } from '../game/game.js';
 import { BUILDINGS, UNITS, POWERS, UPGRADE_COST } from '../game/rts.js';
 import { TROPHIES, trophyImg } from '../game/trophies.js';
 
@@ -99,6 +99,7 @@ export class UI {
         <button class="btn small ghost" data-act="trophies">🏆 Trophées ${this.app.trophy ? this.app.trophy.count() : 0}/${TROPHIES.length}</button>
         <button class="btn small ghost" data-act="sound">${this.app.sfx.on ? '🔊 Son' : '🔇 Son'}</button>
       </div>
+      <button class="btn small ghost diffbtn" data-act="diff">${(DIFFS[save.diff] || DIFFS.facile).icon} Difficulté : <b>${(DIFFS[save.diff] || DIFFS.facile).name}</b></button>
       <div class="know" data-act="story">« Voulez-vous en savoir plus ? »</div>
     `, 'transparentbg menubg');
   }

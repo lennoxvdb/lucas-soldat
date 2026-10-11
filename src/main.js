@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { loadTextures } from './engine/gfx.js';
 import { loadTrooper } from './entities/hero3d.js';
-import { Game, MISSIONS } from './game/game.js';
+import { Game, MISSIONS, DIFFS } from './game/game.js';
 import { UI } from './ui/ui.js';
 import { Sfx } from './engine/audio.js';
 import { Trophies } from './game/trophies.js';
@@ -27,7 +27,7 @@ const ENDING = [
 ];
 
 // ---------------- sauvegarde dans le téléphone ----------------
-const save = { parts: 0, storySeen: false };
+const save = { parts: 0, storySeen: false, diff: 'facile' };
 try { Object.assign(save, JSON.parse(localStorage.getItem('ls_save') || '{}')); } catch (e) { /* rien */ }
 const persist = () => { try { localStorage.setItem('ls_save', JSON.stringify(save)); } catch (e) { /* rien */ } };
 
@@ -321,6 +321,14 @@ const app = {
         if (slideIdx >= slides.length) slidesDone(); else ui.story(slides, slideIdx);
         break;
       case 'storySkip': slidesDone(); break;
+      case 'diff': {
+        // Facile → Normal → Difficile → Facile
+        const order = Object.keys(DIFFS);
+        save.diff = order[(order.indexOf(save.diff) + 1) % order.length]; persist();
+        game.diff = DIFFS[save.diff];
+        ui.title(save);
+        break;
+      }
       case 'sound':
         sfx.setOn(!sfx.on);
         if (game.state === 'pause') ui.pauseMenu(); else ui.title(save);
@@ -373,6 +381,7 @@ async function boot() {
   $('loadtext').textContent = 'Chargement de Lucas en 3D…';
   try { tex.trooper = await loadTrooper(); } catch (e) { console.warn('modèle 3D absent', e); }
   game = new Game({ scene, camera, renderer, tex, sfx, ui, trophy });
+  game.diff = DIFFS[save.diff] || DIFFS.facile;
   window.__game = game; // pour les tests
   renderer.shadowMap.needsUpdate = true;
   resize();

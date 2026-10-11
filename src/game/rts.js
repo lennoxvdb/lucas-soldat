@@ -186,7 +186,7 @@ export class Rts {
     this.active = true;
     this.mi = mi;
     this.parts = this.g.parts || 0;
-    this.money = 800;
+    this.money = 800 + this.g.diff.money;
     this.t = 0;
     this.waveN = 0;
     this.waveT = mi <= 1 ? 150 : 120;
@@ -257,7 +257,7 @@ export class Rts {
         const x = HQ_POS.x + Math.cos(a) * d, z = HQ_POS.z + Math.sin(a) * d;
         if (Math.hypot(x, z) > ARENA - 5 || !this.freeArea(x, z, 2.2)) continue;
         const queen = i === nN - 1;
-        this.addNest(x, z, (mi <= 1 ? 700 : 1000) * (queen ? 2 : 1), queen);
+        this.addNest(x, z, (mi <= 1 ? 700 : 1000) * (queen ? 2 : 1) * this.g.diff.boss, queen);
         break;
       }
     }
@@ -478,7 +478,7 @@ export class Rts {
 
   damageEnt(e, dmg) {
     if (e.dead) return;
-    e.hp -= dmg;
+    e.hp -= dmg * this.g.diff.dmg;
     e.hitT = 0.12;
     if (e.hp > 0) return;
     if (e.type === 'lucas') {
@@ -929,7 +929,7 @@ export class Rts {
       n.spawnT -= dt;
       if (n.spawnT <= 0) {
         // quelques monstres au début, de plus en plus ensuite
-        n.spawnT = Math.max(6, 16 - (this.t - this.calmT) / 25) * (0.8 + Math.random() * 0.4);
+        n.spawnT = Math.max(6, 16 - (this.t - this.calmT) / 25) * (0.8 + Math.random() * 0.4) / g.diff.rate;
         n.outT = 0.9;
         if (g.monsters.length < cap) {
           const a = Math.random() * 6.28;
@@ -944,7 +944,7 @@ export class Rts {
       g.ui.banner('ATTAQUE !', `Vague ${this.waveN}`);
       g.sfx.alarm();
       for (const n of alive) {
-        const cnt = 2 + this.waveN * 2 + Math.floor(this.mi / 2);
+        const cnt = Math.max(1, Math.round((2 + this.waveN * 2 + Math.floor(this.mi / 2)) * g.diff.rate));
         if (this.waveN >= 2 && (n.queen || Math.random() < 0.3)) this.spawnGuardian(n);
         for (let i = 0; i < cnt && g.monsters.length < cap + 30; i++) {
           const a = Math.random() * 6.28;

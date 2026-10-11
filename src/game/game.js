@@ -72,9 +72,17 @@ const RADIO = {
 };
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const CELL = 2.5;
+// les niveaux de difficulté (Facile par défaut : le jeu est pour des enfants)
+// dmg = dégâts reçus, rate = nombre de monstres, hp = solidité des monstres, boss = gardiens et nids, money = haricots au départ (base)
+export const DIFFS = {
+  facile: { name: 'Facile', icon: '😊', dmg: 0.45, rate: 0.6, hp: 0.65, boss: 0.6, money: 600 },
+  normal: { name: 'Normal', icon: '🙂', dmg: 1, rate: 1, hp: 1, boss: 1, money: 0 },
+  difficile: { name: 'Difficile', icon: '😤', dmg: 1.3, rate: 1.25, hp: 1.25, boss: 1.2, money: 0 },
+};
 
 export class Game {
   constructor({ scene, camera, renderer, tex, sfx, ui, trophy }) {
+    this.diff = DIFFS.facile;
     this.trophy = trophy || { unlock() {}, add() {} };
     Object.assign(this, { scene, camera, renderer, tex, sfx, ui });
     this.state = 'menu';
@@ -361,7 +369,7 @@ export class Game {
       this.sfx.squeak();
       return;
     }
-    p.hp -= dmg;
+    p.hp -= dmg * this.diff.dmg;
     p.inv = 1.0;
     p.hitT = 0.4;
     if (this.hero) this.hero.hit();
@@ -420,7 +428,7 @@ export class Game {
   director(dt) {
     const n = this.mission, t = this.t;
     const cap = this.ui.isMobile ? 120 : 170;
-    let rate = (0.7 + t * 0.016) * (1 + n * 0.12);
+    let rate = (0.7 + t * 0.016) * (1 + n * 0.12) * this.diff.rate;
     if (this.bossPhase === 'fight' || this.bossPhase === 'ship') rate *= 0.5;
     if (this.bossPhase === 'part') rate *= 0.35;
     this.spawnAcc += rate * dt;
@@ -438,7 +446,7 @@ export class Game {
     }
     if (t >= this.nextHorde && this.bossPhase === 'none') {
       this.nextHorde += 45;
-      this.horde(10 + n * 2 + Math.floor(t / 18));
+      this.horde(Math.round((10 + n * 2 + Math.floor(t / 18)) * this.diff.rate));
     }
     if (t >= this.nextRadio) { this.nextRadio = t + 22 + Math.random() * 14; this.radio(pick(RADIO.random), Math.random() < 0.5 ? 2 : 4); }
     if (t >= this.mTime && this.bossPhase === 'none') { if (MISSIONS[this.mission].ship) this.callShip(); else this.spawnBoss(); }
@@ -473,7 +481,7 @@ export class Game {
     s.scale.set(0.01, 0.01, 1);
     s.position.set(x, 0, z);
     this.scene.add(s);
-    const hpMul = o.boss ? 1 : (1 + this.t / 220) * (1 + this.mission * 0.15);
+    const hpMul = o.boss ? 1 : (1 + this.t / 220) * (1 + this.mission * 0.15) * this.diff.hp;
     const m = {
       type, T, mats, sprite: s, h, w: h * mats.aspect, pos: new THREE.Vector3(x, 0, z),
       hp: (o.hp || T.hp) * hpMul, maxHp: (o.hp || T.hp) * hpMul, speed: (o.speed || T.speed) * (0.9 + Math.random() * 0.2),
@@ -498,7 +506,7 @@ export class Game {
   spawnBoss() {
     const M = MISSIONS[this.mission];
     const pt = this.offscreenPoint(1.05);
-    const hp = 450 * (1 + this.mission * 0.35) * (this.mission === 4 ? 1.3 : 1);
+    const hp = 450 * (1 + this.mission * 0.35) * (this.mission === 4 ? 1.3 : 1) * this.diff.boss;
     this.boss = this.spawnMonster('tank', pt.x, pt.z, { img: M.boss.img, mats: M.boss.frames ? this.petF[1] : null, h: M.boss.h, hp, speed: 2.2, r: M.boss.h * 0.28, boss: true });
     if (M.boss.frames) { this.boss.frames = this.petF; this.boss.blowT = 0; }
 
