@@ -1,4 +1,4 @@
-# Starshiprout : Lucas, le héros de la planète Prout
+# Starshiprout : Lucas, le héros du gaz
 
 Jeu pour enfants dans l'esprit de *Starship Troopers*, en version cartoon et rigolote :
 Lucas, petit soldat de la Fédération des bonbons, s'écrase sur la planète Prout,

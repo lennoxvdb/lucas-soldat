@@ -2,7 +2,7 @@
   "name": "lucas-soldat",
   "version": "1.0.0",
   "private": true,
-  "description": "Starshiprout : Lucas, le heros de la planete Prout",
+  "description": "Starshiprout : Lucas, le heros du gaz",
   "dependencies": {
     "@capacitor/android": "^8.5.3",
     "@capacitor/core": "^8.5.3",

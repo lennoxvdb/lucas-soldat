@@ -91,7 +91,7 @@ export class UI {
     this.show(`
       <div class="propaganda">LA FÉDÉRATION DES BONBONS PRÉSENTE</div>
       <img class="logo" src="assets/logo/starshiprout.webp" alt="Starshiprout" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-      <div class="textlogo" style="display:none"><b>STARSHIPROUT</b><span>Lucas, le héros de la planète Prout</span></div>
+      <div class="textlogo" style="display:none"><b>STARSHIPROUT</b><span>Lucas, le héros du gaz</span></div>
       ${this.partsRow(save.parts)}
       <button class="btn green" data-act="play">${label}</button>
       <div>

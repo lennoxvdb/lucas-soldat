@@ -1,4 +1,4 @@
-# Starshiprout : Lucas, le héros de la planète Prout
+# Starshiprout : Lucas, le héros du gaz
 
 Nom du jeu choisi par l'utilisateur : **Starshiprout** (héros : Lucas). Ancien nom : « Lucas Soldat : Opération Planète Prout » (dépôt et appId gardent `lucas-soldat`).
 
