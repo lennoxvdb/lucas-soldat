@@ -75,9 +75,9 @@ const CELL = 2.5;
 // les niveaux de difficulté (Facile par défaut : le jeu est pour des enfants)
 // dmg = dégâts reçus, rate = nombre de monstres, hp = solidité des monstres, boss = gardiens et nids, money = haricots au départ (base)
 export const DIFFS = {
-  facile: { name: 'Facile', icon: '😊', dmg: 0.45, rate: 0.6, hp: 0.65, boss: 0.6, money: 600 },
-  normal: { name: 'Normal', icon: '🙂', dmg: 1, rate: 1, hp: 1, boss: 1, money: 0 },
-  difficile: { name: 'Difficile', icon: '😤', dmg: 1.3, rate: 1.25, hp: 1.25, boss: 1.2, money: 0 },
+  facile: { name: 'Facile', icon: '😊', dmg: 0.45, rate: 0.6, hp: 0.65, boss: 0.6, money: 600, lives: 3, time: 0.7, regen: 2.5, hq: 1.6 },
+  normal: { name: 'Normal', icon: '🙂', dmg: 1, rate: 1, hp: 1, boss: 1, money: 0, lives: 1, time: 1, regen: 1 },
+  difficile: { name: 'Difficile', icon: '😤', dmg: 1.3, rate: 1.25, hp: 1.25, boss: 1.2, money: 0, lives: 0, time: 1, regen: 1 },
 };
 
 export class Game {
@@ -206,7 +206,7 @@ export class Game {
     this.world.setTheme(MISSIONS[index].theme || 'planete');
     this.world.setShipStage(this.parts || 0);
     this.menuTheme = false;
-    this.mTime = missionTime(MISSIONS[index]);
+    this.mTime = Math.max(30, Math.round(missionTime(MISSIONS[index]) * (FAST ? 1 : this.diff.time)));
     this.announced = {};
     this.t = 0;
     this.kills = 0;
@@ -220,7 +220,7 @@ export class Game {
     this.p = {
       pos: new THREE.Vector3(2, 0, 3), hp: 100, maxHp: 100, speed: 6.2, inv: 0, magnet: 3.2, dmgMul: 1, cdMul: 1,
       lvl: 1, xp: 0, need: 5, weapons: { blaster: { lvl: 1, t: 0 } }, passives: {}, shieldCd: 0, shieldReady: false,
-      lean: 0, walk: 0, dead: false,
+      lean: 0, walk: 0, dead: false, lives: this.diff.lives,
     };
     this.camTarget.copy(this.p.pos);
     this.pendingLevels = 0;
@@ -314,7 +314,7 @@ export class Game {
     p.slowT = Math.max(0, (p.slowT || 0) - dt);
     p.skillCd = Math.max(0, (p.skillCd || 0) - dt);
     if (p.slowT > 0 && Math.random() < dt * 10) this.particles.emit(p.pos.x, 0.4, p.pos.z, 0xe8d84a, { vy: 0.4, life: 0.5, s0: 0.4, s1: 0.8, alpha: 0.7 });
-    if (!p.dead) p.hp = Math.min(p.maxHp, p.hp + dt * 0.6); // Lucas récupère doucement
+    if (!p.dead) p.hp = Math.min(p.maxHp, p.hp + dt * 0.6 * this.diff.regen); // Lucas récupère doucement
     p.lean += ((ix * -0.14) - p.lean) * Math.min(1, dt * 10);
 
     if (p.passives.shield) {
@@ -378,6 +378,15 @@ export class Game {
     this.sfx.hurt();
     this.ui.hitFlash();
     if (p.hp <= p.maxHp * 0.3 && !this.lowWarned) { this.lowWarned = true; this.radio(pick(RADIO.low), 3); }
+    if (p.hp <= 0 && p.lives > 0) {
+      // une vie en moins : Lucas se relève dans un grand Méga-Prout qui repousse les monstres
+      p.lives--;
+      p.hp = p.maxHp; p.inv = 3;
+      this.megaProut(p.pos.x, p.pos.z, 0.6);
+      this.ui.banner('LUCAS SE RELÈVE !', p.lives ? `Encore ${p.lives} vie${p.lives > 1 ? 's' : ''} en réserve` : 'Dernière chance !');
+      this.radio('Debout, soldat ! On ne lâche rien !', 'sg5');
+      return;
+    }
     if (p.hp <= 0) {
       p.hp = 0; p.dead = true;
       this.state = 'dead';
@@ -1349,8 +1358,16 @@ export class Game {
         it.obj.userData.spin.material.rotation = Math.sin(it.t * 2) * 0.15;
         it.obj.userData.spin.position.y = 0.6 + Math.sin(it.t * 3) * 0.25;
         if (Math.random() < dt * 8) this.particles.emit(it.x + (Math.random() - 0.5) * 2, 0.2, it.z + (Math.random() - 0.5) * 2, 0xfff2a0, { vy: 2, life: 1, s0: 0.2, s1: 0.5 });
+        if (it.t > 1.6) {
+          if (!it.flying) { it.flying = true; this.radio('La pièce du vaisseau arrive vers toi !', 4); }
+          const k = Math.min(1, dt * (2 + it.t));
+          it.x += (P.x - it.x) * k; it.z += (P.z - it.z) * k;
+          it.obj.position.x = it.x; it.obj.position.z = it.z;
+        }
       } else {
         it.obj.position.y = 0.2 + Math.abs(Math.sin(it.t * 4)) * 0.3;
+        const d2 = (it.x - P.x) ** 2 + (it.z - P.z) ** 2;
+        if (d2 < 36 && (it.kind !== 'food' || this.p.hp < this.p.maxHp)) { const k = Math.min(1, dt * 4); it.x += (P.x - it.x) * k; it.z += (P.z - it.z) * k; it.obj.position.x = it.x; it.obj.position.z = it.z; }
       }
       if ((it.x - P.x) ** 2 + (it.z - P.z) ** 2 < (it.kind === 'part' ? 2.2 : 1.2) && this.state === 'play') {
         it.got = true;
@@ -1545,7 +1562,7 @@ export class Game {
     else if (this.bossPhase === 'fight') timer = '⚠️';
     else if (this.bossPhase === 'ship') timer = '🛸';
     else timer = '🚀';
-    this.ui.hudValues(p.hp / p.maxHp, p.xp / p.need, p.lvl, timer, this.kills, p.skillCd || 0);
+    this.ui.hudValues(p.hp / p.maxHp, p.xp / p.need, p.lvl, timer, this.kills, p.skillCd || 0, p.lives);
     // flèche vers le gardien ou la pièce si on ne les voit pas
     let target = null;
     const part = this.items.find((i) => i.kind === 'part');

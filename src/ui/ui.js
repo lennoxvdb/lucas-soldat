@@ -253,8 +253,9 @@ export class UI {
     if (!on) { $('radio').classList.add('hidden'); $('banner').classList.add('hidden'); this.pointer(null); }
   }
 
-  hudValues(hp, xp, lvl, timer, kills, skillCd = 0) {
+  hudValues(hp, xp, lvl, timer, kills, skillCd = 0, lives = 0) {
     const c = this.cache;
+    if (c.lives !== lives) { c.lives = lives; const el = $('lives'); if (el) el.textContent = lives > 0 ? '×' + (lives + 1) : ''; }
     const sk = Math.ceil(skillCd);
     if (c.sk !== sk) {
       c.sk = sk;

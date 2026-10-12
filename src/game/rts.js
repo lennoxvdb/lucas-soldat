@@ -219,7 +219,7 @@ export class Rts {
       for (const s of this.g.world.swamps) if ((s.x - x) ** 2 + (s.z - z) ** 2 < s.r * s.r) this.swamp[k] = 1;
     }
     // le QG : la fusée de Lucas (plus solide à chaque pièce réparée)
-    const hq = { type: 'hq', id: this.nextId++, x: HQ_POS.x, z: HQ_POS.z, r: 3, hp: 0, maxHp: 1200 + 250 * this.parts, built: 1, cells: [], queue: [], prog: 0, h: 4, cd: 0 };
+    const hq = { type: 'hq', id: this.nextId++, x: HQ_POS.x, z: HQ_POS.z, r: 3, hp: 0, maxHp: (1200 + 250 * this.parts) * (this.g.diff.hq || 1), built: 1, cells: [], queue: [], prog: 0, h: 4, cd: 0 };
     hq.hp = hq.maxHp;
     for (let iz = 0; iz < N; iz++) for (let ix = 0; ix < N; ix++) {
       const x = ctr(ix), z = ctr(iz);
@@ -1035,6 +1035,8 @@ export class Rts {
         }
       }
       if (b.type === 'hq') {
+        // en Facile, le vaisseau se répare tout seul petit à petit
+        if (g.diff.hq > 1 && b.hp < b.maxHp) b.hp = Math.min(b.maxHp, b.hp + 5 * dt);
         // la fusée réparée a un canon à gaz
         b.cd -= dt;
         const m = b.cd <= 0 && g.nearest(b.x, b.z, 10);
