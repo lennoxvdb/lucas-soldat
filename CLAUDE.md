@@ -29,7 +29,7 @@ ne pas toucher au port 3000, pas de tests sur son téléphone branché).
 Lucas se trompe de route (GPS) et atterrit sur la planète Prout. Il découvre que son gaz est un trésor (énergie pour toute la Fédération),
 envoie un SOS à son équipe, qui vient construire une base pour exploiter le gaz (pompes sur les geysers). Les monstres et l'Empereur Pétaros
 défendent leur gaz. Le vaisseau a été abîmé à l'atterrissage : une pièce par mission. Fin : base finie, gaz envoyé à la Fédération,
-Lucas rentre en héros. Textes : `STORY` / `ENDING` dans `src/main.js` (`bd_7` SOS et `bd_8` base finie : dessins à venir, `alt` = dessin de secours).
+Lucas rentre en héros. Textes : `STORY` / `ENDING` dans `src/main.js` (`bd_7` SOS et `bd_8` base finie : faits, images larges ; `alt` = dessin de secours si une image manque).
 
 ## Missions (héros et base en alternance, choix de l'utilisateur)
 1 héros (40 s, puis un vaisseau de la Flotte dépose des renforts et on enchaîne directement sur la base, Lucas y est une unité) · 2 base (3 nids) · 3 héros · 4 base (5 nids, tout débloqué) · 5 héros (Empereur Pétaros).
