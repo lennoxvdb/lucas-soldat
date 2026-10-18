@@ -81,7 +81,7 @@ Les dessins 2D de Lucas restent en secours si le modèle ne charge pas.
   Le travail Android de GitHub ne tourne qu'avec « Run workflow » et demande les secrets KEYSTORE_BASE64 / KEYSTORE_PASSWORD (pas encore rangés : refusé par sécurité, l'utilisateur peut le faire).
 - Appli : Capacitor 8 (`android/`, appId `com.lennoxvdb.lucassoldat`), `node tools/build_www.mjs` prépare `www/`, `tools/build_apk.ps1` fabrique l'APK signé → `publication/lucas-soldat.apk` (pas dans git) puis on le met dans une Release GitHub.
 - Clé de signature HORS du projet : `%USERPROFILE%\lucas-soldat-signature` (jks + mot de passe, ne jamais afficher). JDK : `%USERPROFILE%\.jdks\jdk-21…`, SDK : `%LOCALAPPDATA%\Android\Sdk`.
-- Mises à jour automatiques : `src/engine/update.js` (extension libre `@capgo/capacitor-updater`) compare `version.json` local et celui de GitHub Pages, télécharge `update.zip` et l'installe au lancement suivant.
+- Mises à jour automatiques : `src/engine/update.js` (extension libre `@capgo/capacitor-updater`) compare `version.json` local et celui de GitHub Pages, télécharge `update.zip` et l'installe (tout de suite sur l'écran titre). IMPORTANT : `appReady()` est appelé dès le début de `main.js` (sinon, après 10 s de chargement, l'appli croit la mise à jour cassée et revient en arrière) ; `appReadyTimeout` 60 s dans `capacitor.config.json`.
 - Ne jamais installer sur le téléphone branché (règle) : l'utilisateur télécharge l'APK depuis le lien de la Release.
 
 ## Équilibrage

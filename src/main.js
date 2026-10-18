@@ -6,7 +6,9 @@ import { Game, MISSIONS, DIFFS } from './game/game.js';
 import { UI } from './ui/ui.js';
 import { Sfx } from './engine/audio.js';
 import { Trophies } from './game/trophies.js';
-import { autoUpdate } from './engine/update.js';
+import { autoUpdate, appReady } from './engine/update.js';
+
+appReady(); // tout de suite, avant de charger les dessins (sinon la mise à jour est annulée)
 
 const $ = (id) => document.getElementById(id);
 

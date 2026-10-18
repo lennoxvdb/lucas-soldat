@@ -9,13 +9,24 @@ const newer = (a, b) => {
   return false;
 };
 
-export async function autoUpdate(onReady, canApplyNow) {
+// l'extension de mise à jour (dans l'appli Android seulement)
+function updater() {
   const C = window.Capacitor;
-  if (!C || !C.isNativePlatform || !C.isNativePlatform()) return;
-  const U = C.Plugins && C.Plugins.CapacitorUpdater;
+  if (!C || !C.isNativePlatform || !C.isNativePlatform()) return null;
+  return (C.Plugins && C.Plugins.CapacitorUpdater) || (C.registerPlugin ? C.registerPlugin('CapacitorUpdater') : null);
+}
+
+// À APPELER TOUT DE SUITE au démarrage : dit à l'appli « cette version démarre bien ».
+// Sans ça dans les 10 secondes, l'appli croit la mise à jour cassée et revient à l'ancienne
+// (c'était le problème : on le disait seulement après le chargement des dessins).
+export function appReady() {
+  const U = updater();
+  if (U) U.notifyAppReady().catch(() => {});
+}
+
+export async function autoUpdate(onReady, canApplyNow) {
+  const U = updater();
   if (!U) return;
-  // dit au système que cette version démarre bien (sinon il revient à l'ancienne)
-  try { await U.notifyAppReady(); } catch (e) { /* rien */ }
   try {
     const mine = await fetch('version.json', { cache: 'no-store' }).then((r) => r.json());
     const latest = await fetch(SITE + 'version.json?' + Date.now(), { cache: 'no-store' }).then((r) => r.json());
