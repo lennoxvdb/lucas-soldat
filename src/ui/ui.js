@@ -102,7 +102,7 @@ export class UI {
       <button class="btn small ghost" data-act="learn">🎓 Apprendre à construire</button>
       <button class="btn small ghost diffbtn" data-act="diff">${(DIFFS[save.diff] || DIFFS.facile).icon} Difficulté : <b>${(DIFFS[save.diff] || DIFFS.facile).name}</b></button>
       <div class="know" data-act="story">« Voulez-vous en savoir plus ? »</div>
-      ${window.GAME_VERSION ? `<div class="version">version ${window.GAME_VERSION}</div>` : ''}
+      <div class="version"><a data-act="credits">Crédits</a>${window.GAME_VERSION ? ` · version ${window.GAME_VERSION}` : ''}</div>
     `, 'transparentbg menubg');
   }
 
@@ -113,6 +113,22 @@ export class UI {
       <div class="h2 outline">${tr.count()} / ${TROPHIES.length} gagnés</div>
       <div class="trophies">${TROPHIES.map((t, i) => `<div class="tro ${tr.has(t.id) ? 'got' : ''}">
         <img src="${trophyImg(i)}" alt=""><b>${t.name}</b><span>${t.desc}</span></div>`).join('')}</div>
+      <button class="btn green" data-act="menu">◀ RETOUR</button>
+    `, 'dark');
+  }
+
+  credits() {
+    this.show(`
+      <div class="h1 outline">CRÉDITS</div>
+      <div class="card-brief credits">
+        <b>Starshiprout : Lucas, le héros du gaz</b><br><br>
+        <b>Musiques</b> (vrais instruments) : Kevin MacLeod (incompetech.com)<br>
+        « Fluffing a Duck », « Run Amok », « The Builder »<br>
+        Licence Creative Commons : By Attribution 4.0<br><br>
+        <b>Bruitages</b> : Kenney (kenney.nl) « Impact Sounds », « RPG Audio », « Interface Sounds » (CC0)<br>
+        Prouts : « Gastric Distress » par LFA (opengameart.org, CC0)<br><br>
+        <b>Soldat 3D</b> : KayKit par Kay Lousberg (CC0) · <b>Moteur</b> : Three.js
+      </div>
       <button class="btn green" data-act="menu">◀ RETOUR</button>
     `, 'dark');
   }

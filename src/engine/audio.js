@@ -1,11 +1,44 @@
-// Tous les sons sont fabriqués dans le code (pas de fichiers) : prouts, couinements, musique de marche.
+// Les sons du jeu : de vrais enregistrements (pas de sons électroniques).
+// - Prouts : « Gastric Distress » de LFA (OpenGameArt, CC0), faits avec la bouche et les mains.
+// - Coups, cloches, pièces, portes, clics : packs Kenney « Impact Sounds », « RPG Audio », « Interface Sounds » (CC0).
+// - Musiques (vrais instruments) : Kevin MacLeod (incompetech.com), licence CC BY 4.0 :
+//   « Fluffing a Duck » (menu), « Run Amok » (missions héros), « The Builder » (base).
+// Les fichiers sont dans assets/sons (préparés avec ffmpeg depuis les originaux).
+
+const S = 'assets/sons/';
+const FILES = {
+  prout: [1, 2, 3, 4, 6, 7, 8, 9, 10, 12].map((i) => `prout_${i}`),
+  petitProut: ['prout_4', 'prout_9', 'prout_6', 'prout_10'],
+  tir: ['tir_5', 'tir_11', 'tir_9'],
+  boom: ['boom'],
+  coup: ['impactPunch_medium_000', 'impactPunch_medium_002', 'impactSoft_heavy_001'],
+  cloche: ['impactBell_heavy_000', 'impactBell_heavy_002'],
+  metal: ['impactMetal_medium_001', 'impactPlate_heavy_000'],
+  bois: ['impactWood_heavy_002', 'chop'],
+  pieces: ['handleCoins', 'handleCoins2'],
+  porte: ['doorOpen_1', 'metalLatch'],
+  radio: ['metalClick', 'switch_003'],
+  clic: ['click_002', 'toggle_002'],
+  pluck: ['pluck_001', 'pluck_002'],
+  tissu: ['cloth2', 'drop_002'],
+};
+const MUSIC = { menu: 'musique_menu.ogg', hero: 'musique_hero.ogg', base: 'musique_base.ogg' };
 
 export class Sfx {
   constructor() {
     this.ctx = null;
     this.on = localStorage.getItem('ls_sound') !== '0';
     this.last = {};
+    this.buf = {};
     this.musicOn = false;
+    this.track = null;      // la musique qui joue (élément <audio>, plus léger qu'un son décodé)
+    this.trackName = null;
+    this.wantMusic = 'menu';
+    // appli en arrière-plan : on coupe la musique
+    document.addEventListener('visibilitychange', () => {
+      if (!this.track) return;
+      if (document.hidden) this.track.pause(); else if (this.on) this.track.play().catch(() => {});
+    });
   }
 
   unlock() {
@@ -14,24 +47,30 @@ export class Sfx {
       if (!AC) return;
       this.ctx = new AC();
       this.master = this.ctx.createGain();
-      this.master.gain.value = this.on ? 0.55 : 0;
+      this.master.gain.value = this.on ? 0.8 : 0;
       this.master.connect(this.ctx.destination);
-      this.musicBus = this.ctx.createGain();
-      this.musicBus.gain.value = 0.22;
-      this.musicBus.connect(this.master);
-      const len = this.ctx.sampleRate;
-      const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-      this.noiseBuf = buf;
+      this.load();
+      this.music(this.wantMusic);
     }
     if (this.ctx.state === 'suspended') this.ctx.resume();
+  }
+
+  // charge tous les petits sons une fois (ils sont très légers)
+  load() {
+    const names = new Set(Object.values(FILES).flat());
+    for (const n of names) {
+      fetch(S + n + '.ogg').then((r) => r.arrayBuffer())
+        .then((a) => new Promise((ok, ko) => this.ctx.decodeAudioData(a, ok, ko)))
+        .then((b) => { this.buf[n] = b; })
+        .catch(() => { /* son manquant : tant pis */ });
+    }
   }
 
   setOn(v) {
     this.on = v;
     try { localStorage.setItem('ls_sound', v ? '1' : '0'); } catch (e) { /* rien */ }
-    if (this.master) this.master.gain.value = v ? 0.55 : 0;
+    if (this.master) this.master.gain.value = v ? 0.8 : 0;
+    if (this.track) { if (v) this.track.play().catch(() => {}); else this.track.pause(); }
   }
 
   ok(name, ms) {
@@ -42,132 +81,76 @@ export class Sfx {
     return true;
   }
 
-  noise(t0, dur, type, freq, q, vol, dest) {
-    const c = this.ctx;
-    const src = c.createBufferSource();
-    src.buffer = this.noiseBuf;
-    src.loop = true;
-    const f = c.createBiquadFilter();
-    f.type = type; f.frequency.value = freq; f.Q.value = q;
-    const g = c.createGain();
-    g.gain.setValueAtTime(vol, t0);
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-    src.connect(f); f.connect(g); g.connect(dest || this.master);
-    src.start(t0, Math.random()); src.stop(t0 + dur + 0.05);
-    return f;
+  // joue un son d'une famille (au hasard), avec une hauteur et un volume
+  play(group, { rate = 1, vol = 0.6, delay = 0, vary = 0.08 } = {}) {
+    if (!this.ctx || !this.on) return;
+    const list = FILES[group] || [group];
+    const b = this.buf[list[Math.floor(Math.random() * list.length)]];
+    if (!b) return;
+    const src = this.ctx.createBufferSource();
+    src.buffer = b;
+    src.playbackRate.value = rate * (1 + (Math.random() * 2 - 1) * vary);
+    const g = this.ctx.createGain();
+    g.gain.value = vol;
+    src.connect(g); g.connect(this.master);
+    src.start(this.ctx.currentTime + delay);
   }
 
-  tone(t0, dur, type, f0, f1, vol, dest) {
-    const c = this.ctx;
-    const o = c.createOscillator();
-    o.type = type;
-    o.frequency.setValueAtTime(f0, t0);
-    if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(vol, t0 + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(g); g.connect(dest || this.master);
-    o.start(t0); o.stop(t0 + dur + 0.05);
-    return { o, g };
-  }
-
-  // Un vrai prout de synthèse : grave, qui « flotte » grâce à une modulation rapide.
+  // un vrai prout ! (pitch > 1 = plus aigu et plus court, dur > 0.5 = un gros)
   fart(pitch = 1, dur = 0.3, vol = 0.4) {
     if (!this.ctx || !this.on) return;
-    const c = this.ctx, t = c.currentTime;
-    const o = c.createOscillator();
-    o.type = 'sawtooth';
-    const base = 75 * pitch * (0.85 + Math.random() * 0.3);
-    o.frequency.setValueAtTime(base * 1.3, t);
-    o.frequency.exponentialRampToValueAtTime(base * 0.7, t + dur);
-    const lp = c.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 520 * pitch; lp.Q.value = 6;
-    const g = c.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
-    g.gain.setValueAtTime(vol, t + dur * 0.7);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    const lfo = c.createOscillator();
-    lfo.type = 'square'; lfo.frequency.value = 22 + Math.random() * 14;
-    const lg = c.createGain(); lg.gain.value = vol * 0.6;
-    lfo.connect(lg); lg.connect(g.gain);
-    o.connect(lp); lp.connect(g); g.connect(this.master);
-    o.start(t); o.stop(t + dur + 0.05); lfo.start(t); lfo.stop(t + dur + 0.05);
-    this.noise(t, dur * 0.8, 'bandpass', 380 * pitch, 1.2, vol * 0.35);
+    this.play(dur > 0.5 ? 'prout' : 'petitProut', { rate: Math.min(2.2, Math.max(0.5, pitch)), vol: Math.min(1, vol * 1.8) });
   }
 
-  shoot() { if (this.ok('shoot', 70)) this.fart(2.2 + Math.random() * 0.6, 0.08, 0.13); }
-  bean() { if (this.ok('bean', 90)) { const t = this.ctx.currentTime; this.tone(t, 0.07, 'sine', 900, 1500, 0.08); } }
-  deflate() {
-    if (!this.ok('deflate', 55)) return;
-    const t = this.ctx.currentTime;
-    const f0 = 700 + Math.random() * 500;
-    this.tone(t, 0.28, 'sine', f0, f0 * 0.35, 0.12);
-    this.noise(t, 0.22, 'highpass', 2500, 0.7, 0.05);
-  }
-  squeak() { if (this.ok('squeak', 120)) { const t = this.ctx.currentTime; this.tone(t, 0.16, 'square', 500, 1400, 0.05); } }
-  hurt() { if (this.ok('hurt', 200)) { const t = this.ctx.currentTime; this.tone(t, 0.18, 'square', 260, 110, 0.12); this.fart(0.9, 0.2, 0.2); } }
-  boom() {
-    if (!this.ok('boom', 90)) return;
-    const t = this.ctx.currentTime;
-    const f = this.noise(t, 0.55, 'lowpass', 900, 1, 0.45);
-    f.frequency.exponentialRampToValueAtTime(90, t + 0.5);
-    this.fart(0.6, 0.35, 0.3);
-  }
-  strikeWarn() { if (this.ok('warn', 300)) { const t = this.ctx.currentTime; this.tone(t, 0.7, 'sine', 2200, 500, 0.08); } }
-  pickup() { if (this.ok('pickup', 100)) { const t = this.ctx.currentTime; [660, 990, 1320].forEach((f, i) => this.tone(t + i * 0.06, 0.12, 'triangle', f, f, 0.12)); } }
-  levelUp() {
-    if (!this.ok('lvl', 300)) return;
-    const t = this.ctx.currentTime;
-    [523, 659, 784, 1046, 1318].forEach((f, i) => this.tone(t + i * 0.08, 0.22, 'triangle', f, f, 0.14));
-  }
-  radio() { if (this.ok('radio', 400)) { const t = this.ctx.currentTime; this.noise(t, 0.12, 'bandpass', 1800, 3, 0.1); this.tone(t + 0.1, 0.06, 'square', 1200, 1200, 0.04); } }
+  shoot() { if (this.ok('shoot', 90)) this.play('tir', { rate: 1.1, vol: 0.28, vary: 0.15 }); }
+  bean() { if (this.ok('bean', 120)) this.play('pieces', { rate: 1.4, vol: 0.25 }); }
+  deflate() { if (this.ok('deflate', 70)) this.play('petitProut', { rate: 1.5 + Math.random() * 0.5, vol: 0.35 }); }
+  squeak() { if (this.ok('squeak', 120)) this.play('pluck', { rate: 1.3, vol: 0.4 }); }
+  hurt() { if (this.ok('hurt', 220)) { this.play('coup', { vol: 0.7 }); this.play('petitProut', { rate: 0.9, vol: 0.35, delay: 0.05 }); } }
+  boom() { if (this.ok('boom', 110)) this.play('boom', { vol: 0.75, vary: 0.12 }); }
+  strikeWarn() { if (this.ok('warn', 300)) { this.play('cloche', { rate: 1.6, vol: 0.45 }); this.play('cloche', { rate: 1.6, vol: 0.35, delay: 0.25 }); } }
+  pickup() { if (this.ok('pickup', 100)) this.play('pieces', { vol: 0.55 }); }
+  levelUp() { if (this.ok('lvl', 300)) { this.play('cloche', { rate: 1.2, vol: 0.55 }); this.play('pieces', { vol: 0.5, delay: 0.12 }); } }
+  radio() { if (this.ok('radio', 400)) this.play('radio', { vol: 0.5 }); }
   alarm() {
     if (!this.ok('alarm', 1500)) return;
-    const t = this.ctx.currentTime;
-    for (let i = 0; i < 3; i++) this.tone(t + i * 0.36, 0.3, 'square', 440, 660, 0.07);
+    for (let i = 0; i < 3; i++) this.play('cloche', { rate: 1.05, vol: 0.5, delay: i * 0.38, vary: 0 });
   }
   victory() {
     if (!this.ctx || !this.on) return;
-    const t = this.ctx.currentTime;
-    [392, 392, 392, 523, 659, 784].forEach((f, i) => this.tone(t + i * 0.14, i === 5 ? 0.6 : 0.16, 'triangle', f, f, 0.15));
+    this.play('cloche', { rate: 1, vol: 0.6, vary: 0 });
+    this.play('cloche', { rate: 1.26, vol: 0.55, delay: 0.25, vary: 0 });
+    this.play('cloche', { rate: 1.5, vol: 0.6, delay: 0.5, vary: 0 });
+    this.play('pieces', { vol: 0.6, delay: 0.7 });
   }
   sad() {
     if (!this.ctx || !this.on) return;
-    const t = this.ctx.currentTime;
-    [392, 370, 349, 330].forEach((f, i) => this.tone(t + i * 0.3, 0.32, 'triangle', f, f * 0.98, 0.13));
-    this.fart(0.5, 0.9, 0.3);
+    this.play('prout', { rate: 0.7, vol: 0.8, vary: 0 });
+    this.play('tissu', { vol: 0.5, delay: 0.6 });
   }
-  click() { if (this.ok('click', 60)) { const t = this.ctx.currentTime; this.tone(t, 0.05, 'square', 700, 900, 0.05); } }
+  click() { if (this.ok('click', 60)) this.play('clic', { vol: 0.5 }); }
+  build() { if (this.ok('build', 120)) this.play('bois', { vol: 0.55 }); }
+  gate() { if (this.ok('gate', 600)) this.play('porte', { vol: 0.45 }); }
 
-  // --- petite musique de marche militaire (tambour + tuba) ---
-  startMusic() {
-    if (!this.ctx || this.musicOn) return;
-    this.musicOn = true;
-    this.step = 0;
-    this.nextT = this.ctx.currentTime + 0.1;
-    const bass = [98, 0, 147, 0, 98, 0, 147, 0, 110, 0, 165, 0, 98, 0, 147, 131];
-    const sched = () => {
-      if (!this.musicOn) return;
-      const spb = 60 / 118 / 2;
-      while (this.nextT < this.ctx.currentTime + 0.25) {
-        const s = this.step % 16, t = this.nextT;
-        if (this.on) {
-          if (s % 4 === 0) this.tone(t, 0.12, 'sine', 120, 45, 0.5, this.musicBus);
-          if (s === 4 || s === 12) this.noise(t, 0.16, 'highpass', 1400, 0.8, 0.35, this.musicBus);
-          if (s === 14 || s === 15) this.noise(t, 0.06, 'highpass', 1600, 0.8, 0.18, this.musicBus);
-          if (bass[s]) {
-            const b = this.tone(t, spb * 1.6, 'sawtooth', bass[s], bass[s], 0.12, this.musicBus);
-            b.o.detune.value = -8;
-          }
-        }
-        this.step++;
-        this.nextT += spb;
-      }
-      this.musicTimer = setTimeout(sched, 60);
-    };
-    sched();
+  // --- musique : vrais instruments, une par moment du jeu, qui se fondent l'une dans l'autre ---
+  music(name) {
+    this.wantMusic = name;
+    if (!this.ctx || this.trackName === name) return;
+    const old = this.track;
+    const a = new Audio(S + MUSIC[name]);
+    a.loop = true; a.volume = 0;
+    this.track = a; this.trackName = name;
+    if (this.on) a.play().catch(() => {});
+    const target = name === 'menu' ? 0.45 : 0.32;
+    let k = 0;
+    clearInterval(this.fadeT);
+    this.fadeT = setInterval(() => {
+      k = Math.min(1, k + 0.05);
+      a.volume = target * k;
+      if (old) old.volume = Math.max(0, old.volume * (1 - k));
+      if (k >= 1) { clearInterval(this.fadeT); if (old) old.pause(); }
+    }, 60);
   }
-  stopMusic() { this.musicOn = false; clearTimeout(this.musicTimer); }
+  startMusic() { this.musicOn = true; }
+  stopMusic() { this.musicOn = false; }
 }

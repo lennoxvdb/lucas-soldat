@@ -414,3 +414,6 @@ body.phone #tuto { top: 84px; left: 14px; }
 
 #lives { font-family: 'Luckiest Guy', sans-serif; font-weight: normal; color: #fff; font-size: 15px; margin: 0 4px 0 -2px; text-shadow: 0 2px 0 #000; }
 .story-img { max-width: 94%; object-fit: contain; }
+
+.version a { color: #ffd84a; text-decoration: underline; cursor: pointer; pointer-events: auto; }
+.credits { font-size: 14px; line-height: 1.35; }

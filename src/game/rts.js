@@ -444,7 +444,7 @@ export class Rts {
     this.byId.set(b.id, b);
     this.flowDirty = true;
     this.g.particles.burst(cx, 0.5, cz, 0xd9c38f, 10, 3, { life: 0.7, s0: 0.5, s1: 1.4 });
-    this.g.sfx.click();
+    this.g.sfx.build();
     this.uiDirty = true;
     return true;
   }
@@ -1325,6 +1325,8 @@ export class Rts {
       b.obj.rotation.y = b.alongX ? 0 : Math.PI / 2;
       const near = this.units.some((u) => (u.x - b.x) ** 2 + (u.z - b.z) ** 2 < 3.4 * 3.4);
       b.open = (b.open || 0) + ((near && b.built >= 1 ? 1 : 0) - (b.open || 0)) * Math.min(1, g.dt60 || 0.15);
+      if (near && b.built >= 1 && !b.wasOpen) g.sfx.gate();
+      b.wasOpen = near && b.built >= 1;
       b.obj.userData.pivot.rotation.z = b.open * 1.35;
       b.obj.scale.y = 0.4 + 0.6 * b.built;
     }

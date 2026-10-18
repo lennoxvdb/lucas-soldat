@@ -54,6 +54,11 @@ Aussi intégrés : récolteur 8 directions (`assets/recolteur`), Vomi et Crotte 
 Aussi : décor du menu (`assets/menu.webp`, fond de l'écran titre), Ogre Moisi animé (`assets/ogre`, `boss.anim`), insectes animés 12 images (`assets/fourmi`, `mouche`, `scarabee`, `crapaud`), vaisseau QG en 6 étapes (`assets/qg`, `world.setShipStage(parts)`). Ces 5 planches de monstres regardaient à droite : retournées après découpe (tous les dessins de monstres regardent à gauche).
 Si une planche Gemini a des mots écrits sous les dessins : les effacer (bandes blanches) avant `cut_planches.py`.
 
+## Sons (demande : « pas de sons électroniques »)
+`src/engine/audio.js` joue de vrais enregistrements de `assets/sons` (préparés avec ffmpeg) : prouts « Gastric Distress » de LFA (OpenGameArt, CC0, découpés en `prout_1..12`, `tir_*`),
+packs Kenney Impact / RPG Audio / Interface (CC0 : coups, cloches, pièces, porte, clics), `boom.ogg` = mélange coup + mine + prout plus graves.
+Musiques (vrais instruments) de Kevin MacLeod, CC BY 4.0 (crédit obligatoire : écran « Crédits » du menu) : menu « Fluffing a Duck », héros « Run Amok », base « The Builder » (`sfx.music(nom)`, fondu enchaîné, coupée en arrière-plan).
+
 ## Lucas en 3D
 `js/hero3d.js` : modèle KayKit « Knight » (CC0, `assets/3d/trooper.glb`, voir `assets/3d/LICENCE.txt`),
 repeint en camouflage par shader, casque + pistolet à prout ajoutés, animations mélangées

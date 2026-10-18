@@ -301,7 +301,7 @@ function readInput() {
 const sfx = new Sfx();
 let slides = null, slideIdx = 0, slidesDone = null;
 function startStory(list, done) { slides = list; slideIdx = 0; slidesDone = done; ui.story(slides, 0); }
-function toMenu() { game.resetEntities(); game.state = 'menu'; ui.title(save); }
+function toMenu() { game.resetEntities(); game.state = 'menu'; sfx.music('menu'); ui.title(save); }
 function briefing() { ui.briefing(Math.min(save.parts, MISSIONS.length - 1)); }
 
 const trophy = new Trophies(sfx);
@@ -361,8 +361,9 @@ const app = {
         game.startMission(1, { fromShip: true });
         sfx.startMusic();
         break;
-      case 'ending': trophy.unlock('home'); startStory(ENDING, toMenu); break;
+      case 'ending': sfx.music('menu'); trophy.unlock('home'); startStory(ENDING, toMenu); break;
       case 'trophies': ui.trophies(trophy); break;
+      case 'credits': ui.credits(); break;
     }
   },
   pause() {

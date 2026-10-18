@@ -226,6 +226,7 @@ export class Game {
     this.pendingLevels = 0;
     this.state = 'play';
     this.mode = MISSIONS[index].type;
+    this.sfx.music(this.mode === 'base' ? 'base' : 'hero');
     this.ui.hud(true, this.mode);
     this.ui.bossBar(null);
     if (this.mode === 'base') {
