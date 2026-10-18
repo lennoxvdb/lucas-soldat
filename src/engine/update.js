@@ -13,6 +13,8 @@ const newer = (a, b) => {
 function updater() {
   const C = window.Capacitor;
   if (!C || !C.isNativePlatform || !C.isNativePlatform()) return null;
+  // lib/capacitor-updater.js (chargé dans index.html) fournit l'outil ; sans lui, rien ne se passait
+  if (window.capacitorCapacitorUpdater) return window.capacitorCapacitorUpdater.CapacitorUpdater;
   return (C.Plugins && C.Plugins.CapacitorUpdater) || (C.registerPlugin ? C.registerPlugin('CapacitorUpdater') : null);
 }
 
