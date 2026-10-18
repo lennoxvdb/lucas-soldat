@@ -7,3 +7,4 @@ publication/*.aab
 mot-de-passe*.txt
 __pycache__/
 .claude/
+.playwright-mcp/
