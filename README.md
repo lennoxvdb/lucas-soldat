@@ -25,5 +25,5 @@ survit aux hordes de monstres, construit sa base et répare son vaisseau pour re
 - Fabriquer l'APK : `powershell -File tools/build_apk.ps1` (la clé de signature est hors du projet).
 
 Modèle 3D du soldat : KayKit (CC0), voir `assets/3d/LICENCE.txt`.
-Musiques : Kevin MacLeod (incompetech.com), « Fluffing a Duck », « Run Amok », « The Builder », licence CC BY 4.0.
+Musiques : Kevin MacLeod (incompetech.com), « Fluffing a Duck », « Five Armies », « The Builder », « Heroic Age », licence CC BY 4.0.
 Bruitages : Kenney (kenney.nl, CC0) et « Gastric Distress » par LFA (opengameart.org, CC0).

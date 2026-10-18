@@ -2,7 +2,8 @@
 // - Prouts : « Gastric Distress » de LFA (OpenGameArt, CC0), faits avec la bouche et les mains.
 // - Coups, cloches, pièces, portes, clics : packs Kenney « Impact Sounds », « RPG Audio », « Interface Sounds » (CC0).
 // - Musiques (vrais instruments) : Kevin MacLeod (incompetech.com), licence CC BY 4.0 :
-//   « Fluffing a Duck » (menu), « Run Amok » (missions héros), « The Builder » (base).
+//   « Fluffing a Duck » (menu), « Five Armies » (missions héros, action), « The Builder » (base),
+//   « Heroic Age » (attaques de monstres sur la base).
 // Les fichiers sont dans assets/sons (préparés avec ffmpeg depuis les originaux).
 
 const S = 'assets/sons/';
@@ -22,7 +23,7 @@ const FILES = {
   pluck: ['pluck_001', 'pluck_002'],
   tissu: ['cloth2', 'drop_002'],
 };
-const MUSIC = { menu: 'musique_menu.ogg', hero: 'musique_hero.ogg', base: 'musique_base.ogg' };
+const MUSIC = { menu: 'musique_menu.ogg', hero: 'musique_action.ogg', base: 'musique_base.ogg', attaque: 'musique_attaque.ogg' };
 
 export class Sfx {
   constructor() {
@@ -141,7 +142,7 @@ export class Sfx {
     a.loop = true; a.volume = 0;
     this.track = a; this.trackName = name;
     if (this.on) a.play().catch(() => {});
-    const target = name === 'menu' ? 0.45 : 0.32;
+    const target = name === 'menu' ? 0.45 : (name === 'base' ? 0.32 : 0.38);
     let k = 0;
     clearInterval(this.fadeT);
     this.fadeT = setInterval(() => {

@@ -123,7 +123,7 @@ export class UI {
       <div class="card-brief credits">
         <b>Starshiprout : Lucas, le héros du gaz</b><br><br>
         <b>Musiques</b> (vrais instruments) : Kevin MacLeod (incompetech.com)<br>
-        « Fluffing a Duck », « Run Amok », « The Builder »<br>
+        « Fluffing a Duck », « Five Armies », « The Builder », « Heroic Age »<br>
         Licence Creative Commons : By Attribution 4.0<br><br>
         <b>Bruitages</b> : Kenney (kenney.nl) « Impact Sounds », « RPG Audio », « Interface Sounds » (CC0)<br>
         Prouts : « Gastric Distress » par LFA (opengameart.org, CC0)<br><br>

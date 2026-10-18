@@ -192,6 +192,7 @@ export class Rts {
     this.money = 800 + this.g.diff.money;
     this.t = 0;
     this.waveN = 0;
+    this.attackMusicT = 0;
     this.waveT = mi <= 1 ? 150 : 120;
     this.awake = false;
     this.calmT = mi <= 1 ? 60 : 35; // au début, les nids dorment : on a le temps de construire
@@ -758,6 +759,8 @@ export class Rts {
     this.fogT -= dt;
     if (this.fogT <= 0) { this.fogT = 0.2; this.updateFog(); }
     if (this.tuto && this.tuto.active) this.tuto.update(dt); else this.hints(dt);
+    // l'attaque est finie : on revient à la musique de chantier
+    if (this.attackMusicT > 0) { this.attackMusicT -= dt; if (this.attackMusicT <= 0 || (this.attackMusicT < 50 && this.g.monsters.length < 3)) { this.attackMusicT = 0; this.g.sfx.music('base'); } }
     this.draw();
   }
 
@@ -975,6 +978,7 @@ export class Rts {
       g.radio(pick(['ALERTE ! Une grosse attaque arrive sur la base !', 'Les nids envoient une horde ! Aux postes de combat !']), 3);
       g.ui.banner('ATTAQUE !', `Vague ${this.waveN}`);
       g.sfx.alarm();
+      g.sfx.music('attaque'); this.attackMusicT = 80; // musique d'action pendant l'attaque
       for (const n of alive) {
         const cnt = Math.max(1, Math.round((2 + this.waveN * 2 + Math.floor(this.mi / 2)) * g.diff.rate));
         if (this.waveN >= 2 && (n.queen || Math.random() < 0.3)) this.spawnGuardian(n);

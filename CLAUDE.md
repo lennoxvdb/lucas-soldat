@@ -57,7 +57,7 @@ Si une planche Gemini a des mots écrits sous les dessins : les effacer (bandes 
 ## Sons (demande : « pas de sons électroniques »)
 `src/engine/audio.js` joue de vrais enregistrements de `assets/sons` (préparés avec ffmpeg) : prouts « Gastric Distress » de LFA (OpenGameArt, CC0, découpés en `prout_1..12`, `tir_*`),
 packs Kenney Impact / RPG Audio / Interface (CC0 : coups, cloches, pièces, porte, clics), `boom.ogg` = mélange coup + mine + prout plus graves.
-Musiques (vrais instruments) de Kevin MacLeod, CC BY 4.0 (crédit obligatoire : écran « Crédits » du menu) : menu « Fluffing a Duck », héros « Run Amok », base « The Builder » (`sfx.music(nom)`, fondu enchaîné, coupée en arrière-plan).
+Musiques (vrais instruments) de Kevin MacLeod, CC BY 4.0 (crédit obligatoire : écran « Crédits » du menu) : menu « Fluffing a Duck », héros « Five Armies » (action, demandée par l'utilisateur), base « The Builder », attaques sur la base « Heroic Age » (`attackMusicT`) (`sfx.music(nom)`, fondu enchaîné, coupée en arrière-plan).
 
 ## Lucas en 3D
 `js/hero3d.js` : modèle KayKit « Knight » (CC0, `assets/3d/trooper.glb`, voir `assets/3d/LICENCE.txt`),
