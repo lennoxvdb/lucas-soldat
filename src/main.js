@@ -6,7 +6,9 @@ import { Game, MISSIONS, DIFFS } from './game/game.js';
 import { UI } from './ui/ui.js';
 import { Sfx } from './engine/audio.js';
 import { Trophies } from './game/trophies.js';
-import { autoUpdate, appReady } from './engine/update.js';
+import * as upd from './engine/update.js';
+const { autoUpdate, appReady } = upd;
+window.UPDATE_STATUS = () => upd.updateStatus;
 
 appReady(); // tout de suite, avant de charger les dessins (sinon la mise à jour est annulée)
 

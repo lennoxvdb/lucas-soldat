@@ -102,7 +102,7 @@ export class UI {
       <button class="btn small ghost" data-act="learn">🎓 Apprendre à construire</button>
       <button class="btn small ghost diffbtn" data-act="diff">${(DIFFS[save.diff] || DIFFS.facile).icon} Difficulté : <b>${(DIFFS[save.diff] || DIFFS.facile).name}</b></button>
       <div class="know" data-act="story">« Voulez-vous en savoir plus ? »</div>
-      <div class="version"><a data-act="credits">Crédits</a>${window.GAME_VERSION ? ` · version ${window.GAME_VERSION}` : ''}</div>
+      <div class="version"><a data-act="credits">Crédits</a>${window.GAME_VERSION ? ` · version ${window.GAME_VERSION}` : ''}<br><span id="updstatus">${window.UPDATE_STATUS ? window.UPDATE_STATUS() : ''}</span></div>
     `, 'transparentbg menubg');
   }
 

@@ -417,3 +417,4 @@ body.phone #tuto { top: 84px; left: 14px; }
 
 .version a { color: #ffd84a; text-decoration: underline; cursor: pointer; pointer-events: auto; }
 .credits { font-size: 14px; line-height: 1.35; }
+.version { text-align: right; } #updstatus { color: #b8ff6a; }
